@@ -2,7 +2,7 @@
 
 # HiAPI GPT Image 2 Skill
 
-Generate images with OpenAI `gpt-image-2` through HiAPI, directly from AI agents.
+Add GPT Image 2 image generation to your AI Agent with HiAPI.
 
 [![Skill](https://img.shields.io/badge/Skill-hiapi--gpt--image--2-10A37F)](SKILL.md)
 [![Model](https://img.shields.io/badge/Model-gpt--image--2-blue)](https://www.hiapi.ai)
@@ -57,7 +57,7 @@ Use $hiapi-gpt-image-2 to generate a 16:9 launch poster through HiAPI. If my API
 
 ## What Is This?
 
-An AI skill plugin for OpenClaw, Claude Code, OpenCode, Codex-style agents, and other local agent runtimes. Powered by [HiAPI](https://www.hiapi.ai), it lets your AI Agent generate images with GPT Image 2.
+An AI skill for OpenClaw, Claude Code, OpenCode, Codex-style agents, and other local agent tools. After installation, your agent can create images with GPT Image 2 using your HiAPI account.
 
 | Skill | Description | Model |
 | --- | --- | --- |
