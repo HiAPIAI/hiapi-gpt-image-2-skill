@@ -1,71 +1,97 @@
+<div align="center">
+
 # HiAPI GPT Image 2 Skill
+
+Generate images with OpenAI `gpt-image-2` through HiAPI, directly from AI agents.
+
+[![Skill](https://img.shields.io/badge/Skill-hiapi--gpt--image--2-10A37F)](SKILL.md)
+[![Model](https://img.shields.io/badge/Model-gpt--image--2-blue)](https://www.hiapi.ai)
+[![Runtime](https://img.shields.io/badge/Node.js-18%2B-339933)](package.json)
+[![License](https://img.shields.io/badge/License-MIT-black)](LICENSE)
+
+[Get API Key](https://www.hiapi.ai/en/dashboard/api-keys) ·
+[Add Credits](https://www.hiapi.ai/en/dashboard) ·
+[Pricing](https://www.hiapi.ai/en/pricing) ·
+[Docs](https://docs.hiapi.ai) ·
+[AI Agent Notes](llms-install.md)
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
 
-Generate images with OpenAI `gpt-image-2` through [HiAPI](https://www.hiapi.ai), using a skill that AI agents can read, install, and run directly.
+</div>
 
-[Get API Key](https://www.hiapi.ai/en/dashboard/api-keys) · [Add Credits](https://www.hiapi.ai/en/dashboard) · [Pricing](https://www.hiapi.ai/en/pricing) · [HiAPI Docs](https://docs.hiapi.ai) · [AI agent notes](llms-install.md)
+---
 
-## For AI Agents
+## Agent Quick Start
 
-If you are an AI agent reading this repository:
+If you are an AI agent reading this repository, do this:
 
-1. Read [`SKILL.md`](SKILL.md).
-2. Check that `HIAPI_API_KEY` is configured.
-3. If no key is configured, send the user to [HiAPI API Keys](https://www.hiapi.ai/en/dashboard/api-keys).
-4. Run `node scripts/hiapi-gpt-image-2.mjs --prompt "..." --aspect-ratio 16:9`.
-5. Return the saved image path or remote image URL.
-6. If the API says balance, credits, quota, or HTTP `402`, send the user to the [HiAPI dashboard](https://www.hiapi.ai/en/dashboard) and [pricing page](https://www.hiapi.ai/en/pricing).
-7. Never fabricate generated image paths, URLs, or success messages.
+```text
+1. Read SKILL.md.
+2. Check HIAPI_API_KEY.
+3. If missing, send the user to https://www.hiapi.ai/en/dashboard/api-keys.
+4. Run scripts/hiapi-gpt-image-2.mjs with the user's prompt.
+5. Return the generated image path or URL.
+6. If balance/credits/quota/HTTP 402 appears, send the user to https://www.hiapi.ai/en/dashboard.
+7. Never fabricate image paths, URLs, or success messages.
+```
 
-Copy-ready agent prompt:
+Copy-ready prompt:
 
 ```text
 Use $hiapi-gpt-image-2 to generate a 16:9 launch poster through HiAPI. If my API key or balance is missing, tell me exactly where to configure it.
 ```
 
-## Why Use This Skill
+---
 
-This repository turns HiAPI's `gpt-image-2` model into a practical agent skill:
+## Choose Your Path
 
-- Clear install path for Codex, Claude Code, Cursor-style agents, and local agent runtimes.
-- One focused model: `gpt-image-2`, no confusing model router yet.
-- HiAPI API key flow built into the README and error messages.
-- Helpful failure guidance for missing API keys, invalid keys, insufficient balance, rate limits, and content policy errors.
-- Local output handling: base64 images are saved under `outputs/`; URL images are returned as URLs.
+| I want to... | Start here | Result |
+| --- | --- | --- |
+| Use the skill in Codex | [Install into Codex](#install-into-codex) | `$hiapi-gpt-image-2` becomes available after restart |
+| Generate from terminal | [CLI usage](#cli-usage) | Image files saved under `outputs/` |
+| Configure HiAPI | [API key setup](#api-key-setup) | `HIAPI_API_KEY` is ready for agents |
+| Fix an error | [Error guide](#error-guide) | Clear next action for key, balance, rate limit, or safety issues |
+| Let another agent install it | [AI Agent Notes](llms-install.md) | Agent-readable installation instructions |
 
-## What This Skill Uses
+---
 
-| Item | Value |
+## What This Skill Does
+
+| Area | Details |
 | --- | --- |
 | Skill name | `hiapi-gpt-image-2` |
 | Model | `gpt-image-2` |
-| Provider path | HiAPI |
+| Provider | [HiAPI](https://www.hiapi.ai) |
 | Endpoint | `POST /v1/chat/completions` |
-| Main use | Text-to-image generation |
-| Output | Saved image files or remote image URLs |
+| Use case | Text-to-image generation |
+| Aspect ratios | `auto`, `1:1`, `16:9`, `9:16`, `4:3`, `3:4` |
+| Output | Local image files or remote image URLs |
 | Runtime | Node.js 18+ |
 
-## Install
+Why it is useful:
 
-Clone the skill:
+- Focused on one model, so there is no routing ambiguity.
+- Gives agents exact instructions instead of making them infer API details.
+- Sends users to HiAPI when they need an API key, credits, pricing, or documentation.
+- Handles common failure states with actionable messages.
+- Saves base64 image results as local files automatically.
+
+---
+
+## Install Into Codex
 
 ```bash
 git clone https://github.com/HiAPIAI/hiapi-gpt-image-2-skill.git
 cd hiapi-gpt-image-2-skill
 npm test
-```
 
-Install into Codex:
-
-```bash
 mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
 cp -R . "${CODEX_HOME:-$HOME/.codex}/skills/hiapi-gpt-image-2"
 ```
 
 Restart Codex after copying the skill.
 
-For other agent runtimes, copy or symlink this folder into the runtime's skill directory:
+For another agent runtime:
 
 ```bash
 export AGENT_SKILLS_DIR="/path/to/your/agent/skills"
@@ -73,38 +99,35 @@ mkdir -p "$AGENT_SKILLS_DIR"
 ln -s "$PWD" "$AGENT_SKILLS_DIR/hiapi-gpt-image-2"
 ```
 
-## Configure HiAPI
+---
 
-Create an API key:
+## API Key Setup
 
-```text
-https://www.hiapi.ai/en/dashboard/api-keys
-```
-
-Set your environment:
+1. Create or copy a key from [HiAPI API Keys](https://www.hiapi.ai/en/dashboard/api-keys).
+2. Export it in the shell that runs your agent:
 
 ```bash
 export HIAPI_API_KEY="your_hiapi_api_key_here"
 export HIAPI_BASE_URL="https://api.hiapi.ai"
 ```
 
-`HIAPI_BASE_URL` is optional. The default is `https://api.hiapi.ai`.
-
-Check local configuration:
+3. Check configuration:
 
 ```bash
 node scripts/check-config.mjs
 ```
 
-Live check:
+4. Optional live check:
 
 ```bash
 node scripts/check-config.mjs --live
 ```
 
-## Use With An Agent
+`HIAPI_BASE_URL` is optional. The default is `https://api.hiapi.ai`.
 
-Examples:
+---
+
+## Use With An Agent
 
 ```text
 Use $hiapi-gpt-image-2 to generate a 16:9 product launch poster for an AI writing app.
@@ -122,9 +145,9 @@ Generate a 9:16 social media poster with GPT Image 2 through HiAPI. The headline
 Create a 4:3 editorial illustration of a compact AI dashboard in a quiet operations room.
 ```
 
-## CLI Usage
+---
 
-Basic generation:
+## CLI Usage
 
 ```bash
 node scripts/hiapi-gpt-image-2.mjs \
@@ -141,7 +164,7 @@ node scripts/hiapi-gpt-image-2.mjs \
   --output-dir ./outputs
 ```
 
-Output:
+Output shape:
 
 ```json
 {
@@ -157,17 +180,11 @@ Output:
 }
 ```
 
-## Supported Options
+---
 
-| Option | Values |
-| --- | --- |
-| `--prompt` | Any non-empty image prompt |
-| `--aspect-ratio` | `auto`, `1:1`, `16:9`, `9:16`, `4:3`, `3:4` |
-| `--output-dir` | Local directory for generated files |
+## Error Guide
 
-## Error Guidance
-
-| Error | What To Do |
+| Error | Next action |
 | --- | --- |
 | `HIAPI_API_KEY is required` | Create a key at [HiAPI API Keys](https://www.hiapi.ai/en/dashboard/api-keys), then export `HIAPI_API_KEY`. |
 | `HTTP 401` or `HTTP 403` | Check that the key is valid, active, and copied completely. |
@@ -176,7 +193,10 @@ Output:
 | Content policy or safety error | Revise the prompt and try again. |
 | No image extracted | The skill expects Markdown image output in `choices[0].message.content`; inspect the raw response. |
 
-## API Contract
+---
+
+<details>
+<summary><strong>API Contract</strong></summary>
 
 The skill calls HiAPI's OpenAI-compatible Chat Completions endpoint:
 
@@ -220,7 +240,10 @@ Common output:
 ![image](data:image/png;base64,...)
 ```
 
-## Project Structure
+</details>
+
+<details>
+<summary><strong>Project Structure</strong></summary>
 
 ```text
 .
@@ -245,7 +268,10 @@ Common output:
 └── package.json
 ```
 
-## Current Scope
+</details>
+
+<details>
+<summary><strong>Current Scope</strong></summary>
 
 This first version is intentionally focused:
 
@@ -255,6 +281,10 @@ This first version is intentionally focused:
 - No multi-model routing yet.
 
 For all HiAPI image and video models, use [HiAPI MCP](https://docs.hiapi.ai) or wait for a broader multi-model HiAPI skill.
+
+</details>
+
+---
 
 ## Development
 
