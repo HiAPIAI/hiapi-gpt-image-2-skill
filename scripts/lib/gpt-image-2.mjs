@@ -4,6 +4,10 @@ import path from "node:path";
 export const MODEL = "gpt-image-2";
 export const DEFAULT_BASE_URL = "https://api.hiapi.ai";
 export const DEFAULT_ASPECT_RATIO = "1:1";
+export const HIAPI_HOME_URL = "https://www.hiapi.ai";
+export const HIAPI_API_KEYS_URL = "https://www.hiapi.ai/en/dashboard/api-keys";
+export const HIAPI_DASHBOARD_URL = "https://www.hiapi.ai/en/dashboard";
+export const HIAPI_PRICING_URL = "https://www.hiapi.ai/en/pricing";
 export const SUPPORTED_ASPECT_RATIOS = new Set([
   "auto",
   "1:1",
@@ -46,7 +50,9 @@ export function buildChatPayload({ prompt, aspectRatio = DEFAULT_ASPECT_RATIO })
 export function resolveConfig(env = process.env) {
   const apiKey = String(env.HIAPI_API_KEY || "").trim();
   if (!apiKey) {
-    throw new Error("HIAPI_API_KEY is required.");
+    throw new Error(
+      `HIAPI_API_KEY is required. Get one at ${HIAPI_API_KEYS_URL}, then run: export HIAPI_API_KEY="your_hiapi_api_key_here"`,
+    );
   }
 
   const baseUrl = String(env.HIAPI_BASE_URL || DEFAULT_BASE_URL)
@@ -105,8 +111,7 @@ export async function callHiApi({ config, payload, fetchImpl = fetch }) {
   }
 
   if (!response.ok) {
-    const message = summarizeErrorBody(json);
-    throw new Error(`HiAPI request failed with HTTP ${response.status}: ${message}`);
+    throw new Error(buildHttpErrorMessage(response.status, json));
   }
 
   return json;
@@ -117,6 +122,43 @@ export function summarizeErrorBody(body) {
   if (body?.message) return String(body.message).slice(0, 500);
   if (body?.raw) return String(body.raw).slice(0, 500);
   return JSON.stringify(body).slice(0, 500);
+}
+
+export function buildHttpErrorMessage(status, body) {
+  const summary = summarizeErrorBody(body);
+  const lowerSummary = summary.toLowerCase();
+  const guidance = guidanceForHttpError(status, lowerSummary);
+  return `HiAPI request failed with HTTP ${status}: ${summary}\n${guidance}`;
+}
+
+function guidanceForHttpError(status, lowerSummary) {
+  if (status === 401 || status === 403) {
+    return `Check your HiAPI API key or create a new one: ${HIAPI_API_KEYS_URL}`;
+  }
+
+  if (
+    status === 402 ||
+    lowerSummary.includes("insufficient") ||
+    lowerSummary.includes("balance") ||
+    lowerSummary.includes("credit") ||
+    lowerSummary.includes("quota")
+  ) {
+    return `Your HiAPI balance or credits may be insufficient. Add credits or check billing in the HiAPI dashboard: ${HIAPI_DASHBOARD_URL}. Pricing: ${HIAPI_PRICING_URL}`;
+  }
+
+  if (status === 429) {
+    return "The request was rate limited. Please wait and retry, or reduce concurrent image generation requests.";
+  }
+
+  if (
+    lowerSummary.includes("content_policy") ||
+    lowerSummary.includes("policy") ||
+    lowerSummary.includes("safety")
+  ) {
+    return "The prompt may have triggered a safety policy. Revise the prompt and try again.";
+  }
+
+  return `If this keeps happening, verify your HiAPI key, account status, and model access in the HiAPI dashboard: ${HIAPI_DASHBOARD_URL}`;
 }
 
 export async function saveImageOutputs(outputs, { outputDir, now = new Date() }) {

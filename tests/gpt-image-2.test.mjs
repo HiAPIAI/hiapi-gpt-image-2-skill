@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
   buildChatPayload,
+  buildHttpErrorMessage,
   extractImageOutputs,
   normalizeAspectRatio,
   resolveConfig,
@@ -51,7 +52,10 @@ test("extracts data-uri and URL images from chat markdown content", () => {
 });
 
 test("resolveConfig requires HIAPI_API_KEY and normalizes base URL", () => {
-  assert.throws(() => resolveConfig({}), /HIAPI_API_KEY/);
+  assert.throws(
+    () => resolveConfig({}),
+    /Get one at https:\/\/www\.hiapi\.ai\/en\/dashboard\/api-keys/,
+  );
 
   assert.deepEqual(
     resolveConfig({
@@ -62,5 +66,39 @@ test("resolveConfig requires HIAPI_API_KEY and normalizes base URL", () => {
       apiKey: "test-key",
       baseUrl: "https://api.hiapi.ai",
     },
+  );
+});
+
+test("buildHttpErrorMessage guides users to configure a HiAPI API key", () => {
+  const message = buildHttpErrorMessage(401, {
+    error: { message: "Invalid API key" },
+  });
+
+  assert.match(message, /HTTP 401/);
+  assert.match(message, /API key/);
+  assert.match(message, /https:\/\/www\.hiapi\.ai\/en\/dashboard\/api-keys/);
+});
+
+test("buildHttpErrorMessage guides users to add credits when balance is insufficient", () => {
+  const message = buildHttpErrorMessage(402, {
+    error: { message: "insufficient balance" },
+  });
+
+  assert.match(message, /HTTP 402/);
+  assert.match(message, /balance|credits/i);
+  assert.match(message, /https:\/\/www\.hiapi\.ai\/en\/dashboard/);
+});
+
+test("buildHttpErrorMessage handles rate limits and content policy errors", () => {
+  assert.match(
+    buildHttpErrorMessage(429, { error: { message: "Too many requests" } }),
+    /wait and retry/i,
+  );
+
+  assert.match(
+    buildHttpErrorMessage(400, {
+      error: { message: "content_policy_violation" },
+    }),
+    /revise the prompt/i,
   );
 });

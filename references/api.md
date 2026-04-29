@@ -21,6 +21,19 @@ Content-Type: application/json
 
 Do not print API keys in logs or final answers.
 
+If the user does not have a key, send them to:
+
+```text
+https://www.hiapi.ai/en/dashboard/api-keys
+```
+
+If generation fails because of balance, credits, quota, or payment status, send them to:
+
+```text
+https://www.hiapi.ai/en/dashboard
+https://www.hiapi.ai/en/pricing
+```
+
 ## Request Body
 
 ```json
