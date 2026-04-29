@@ -1,8 +1,10 @@
 # GPT Image 2 图像生成技能
 
-GPT Image 2 AI 图像生成，一次安装，让你的 AI Agent 直接生成图片。
+把 GPT Image 2 图像生成接入你的 AI Agent。
 
-**GPT Image 2 • 安装 • API Key • [HiAPI](https://www.hiapi.ai)**
+**GPT Image 2 • 安装 • API Key • [HiAPI](https://www.hiapi.ai/zh)**
+
+[免费获取 API Key](https://www.hiapi.ai/zh/register) · [查看价格](https://www.hiapi.ai/zh/pricing) · [HiAPI 文档](https://docs.hiapi.ai)
 
 Languages: [English](README.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md) | [한국어](README.ko.md)
 
@@ -15,6 +17,8 @@ Languages: [English](README.md) | [简体中文](README.zh-CN.md) | [日本語](
 ## 这是什么？
 
 一个适用于 OpenClaw / Claude Code / OpenCode / Codex 类 Agent 的 AI 技能插件。安装后，你的 AI Agent 可以通过 HiAPI 使用 GPT Image 2 进行图像生成。
+
+HiAPI 是为开发者打造的 AI API 平台：一个 API，所有 AI 模型。图像、视频、音乐和文本，一个密钥全搞定。
 
 | 技能 | 描述 | 模型 |
 | --- | --- | --- |
@@ -69,7 +73,7 @@ cp -R hiapi-gpt-image-2-skill "$AGENT_SKILLS_DIR/hiapi-gpt-image-2"
 
 ## 获取 API Key
 
-1. 打开 [HiAPI API Keys](https://www.hiapi.ai/en/dashboard/api-keys)
+1. 打开 [免费获取 API Key](https://www.hiapi.ai/zh/register)
 2. 登录或注册 HiAPI 账号
 3. 创建新的 API Key
 4. 在运行 Agent 的终端设置环境变量：
@@ -164,7 +168,7 @@ node scripts/hiapi-gpt-image-2.mjs \
 
 | 问题 | 解决方案 |
 | --- | --- |
-| `HIAPI_API_KEY is required` | 去 [HiAPI API Keys](https://www.hiapi.ai/en/dashboard/api-keys) 创建 Key，然后设置 `HIAPI_API_KEY`。 |
+| `HIAPI_API_KEY is required` | 去 [免费获取 API Key](https://www.hiapi.ai/zh/register) 创建 Key，然后设置 `HIAPI_API_KEY`。 |
 | `401 Unauthorized` | 检查 API Key 是否正确，或重新生成 Key。 |
 | `402 Payment Required` / 余额不足 | 进入 [HiAPI Dashboard](https://www.hiapi.ai/en/dashboard) 检查账号状态。 |
 | `429 Too Many Requests` | 稍后重试，或减少并发生成请求。 |
@@ -191,4 +195,4 @@ MIT
 
 ---
 
-[HiAPI](https://www.hiapi.ai) — 统一 AI API 网关
+[HiAPI](https://www.hiapi.ai/zh) — 一个 API，所有 AI 模型
