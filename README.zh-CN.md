@@ -165,10 +165,8 @@ Content-Type: application/json
 choices[0].message.content
 ```
 
-## 当前范围
+## 相关 HiAPI 能力
 
-- 仅支持文生图。
-- 仅支持 `gpt-image-2`。
-- 暂不支持参考图、修图、多模型路由。
+这个 skill 适合在明确使用 `gpt-image-2` 文生图时使用。
 
-需要使用 HiAPI 全部图像/视频模型时，请使用 [HiAPI MCP](https://docs.hiapi.ai)，后续也可以继续扩展多模型 skill。
+如果需要图片编辑、视频生成或其他 HiAPI 图像/视频模型，请使用 [HiAPI MCP](https://docs.hiapi.ai) 或对应的 HiAPI API 文档。
