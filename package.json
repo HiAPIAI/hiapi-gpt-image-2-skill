@@ -1,0 +1,15 @@
+{
+  "name": "hiapi-gpt-image-2-skill",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "hiapi-gpt-image-2": "./scripts/hiapi-gpt-image-2.mjs",
+    "hiapi-gpt-image-2-check": "./scripts/check-config.mjs"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
