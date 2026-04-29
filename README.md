@@ -11,8 +11,8 @@ GPT Image 2 image generation for AI Agents.
 
 **GPT Image 2 • Install • API Key • [HiAPI](https://www.hiapi.ai)**
 
-[Get API Key](https://www.hiapi.ai/zh/register) ·
-[Pricing](https://www.hiapi.ai/zh/pricing) ·
+[Get API Key](https://www.hiapi.ai/en/register) ·
+[Pricing](https://www.hiapi.ai/en/pricing) ·
 [Docs](https://docs.hiapi.ai) ·
 [AI Agent Notes](llms-install.md)
 
@@ -29,7 +29,7 @@ If you are an AI agent reading this repository, do this:
 ```text
 1. Read SKILL.md.
 2. Check HIAPI_API_KEY.
-3. If missing, send the user to https://www.hiapi.ai/zh/register.
+3. If missing, send the user to https://www.hiapi.ai/en/register.
 4. Run scripts/hiapi-gpt-image-2.mjs with the user's prompt.
 5. Return the generated image path or URL.
 6. If balance/credits/quota/HTTP 402 appears, send the user to https://www.hiapi.ai/en/dashboard.
@@ -104,7 +104,7 @@ ln -s "$PWD" "$AGENT_SKILLS_DIR/hiapi-gpt-image-2"
 
 ## API Key Setup
 
-1. Create or copy a key from [HiAPI API Keys](https://www.hiapi.ai/zh/register).
+1. Create or copy a key from [HiAPI API Keys](https://www.hiapi.ai/en/register).
 2. Export it in the shell that runs your agent:
 
 ```bash
@@ -187,9 +187,9 @@ Output shape:
 
 | Error | Next action |
 | --- | --- |
-| `HIAPI_API_KEY is required` | Create a key at [HiAPI API Keys](https://www.hiapi.ai/zh/register), then export `HIAPI_API_KEY`. |
+| `HIAPI_API_KEY is required` | Create a key at [HiAPI API Keys](https://www.hiapi.ai/en/register), then export `HIAPI_API_KEY`. |
 | `HTTP 401` or `HTTP 403` | Check that the key is valid, active, and copied completely. |
-| `HTTP 402`, insufficient balance, credits, quota | Add credits or check billing in the [HiAPI dashboard](https://www.hiapi.ai/en/dashboard). See [pricing](https://www.hiapi.ai/zh/pricing). |
+| `HTTP 402`, insufficient balance, credits, quota | Add credits or check billing in the [HiAPI dashboard](https://www.hiapi.ai/en/dashboard). See [pricing](https://www.hiapi.ai/en/pricing). |
 | `HTTP 429` | Wait and retry, or reduce concurrent generation requests. |
 | Content policy or safety error | Revise the prompt and try again. |
 | No image extracted | The skill expects Markdown image output in `choices[0].message.content`; inspect the raw response. |

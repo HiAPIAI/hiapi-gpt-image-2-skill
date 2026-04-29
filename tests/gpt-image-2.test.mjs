@@ -54,7 +54,7 @@ test("extracts data-uri and URL images from chat markdown content", () => {
 test("resolveConfig requires HIAPI_API_KEY and normalizes base URL", () => {
   assert.throws(
     () => resolveConfig({}),
-    /Get one at https:\/\/www\.hiapi\.ai\/zh\/register/,
+    /Get one at https:\/\/www\.hiapi\.ai\/en\/register/,
   );
 
   assert.deepEqual(
@@ -76,7 +76,7 @@ test("buildHttpErrorMessage guides users to configure a HiAPI API key", () => {
 
   assert.match(message, /HTTP 401/);
   assert.match(message, /API key/);
-  assert.match(message, /https:\/\/www\.hiapi\.ai\/zh\/register/);
+  assert.match(message, /https:\/\/www\.hiapi\.ai\/en\/register/);
 });
 
 test("buildHttpErrorMessage guides users to add credits when balance is insufficient", () => {

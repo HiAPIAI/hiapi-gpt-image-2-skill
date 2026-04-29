@@ -5,9 +5,9 @@ export const MODEL = "gpt-image-2";
 export const DEFAULT_BASE_URL = "https://api.hiapi.ai";
 export const DEFAULT_ASPECT_RATIO = "1:1";
 export const HIAPI_HOME_URL = "https://www.hiapi.ai";
-export const HIAPI_API_KEYS_URL = "https://www.hiapi.ai/zh/register";
+export const HIAPI_API_KEYS_URL = "https://www.hiapi.ai/en/register";
 export const HIAPI_DASHBOARD_URL = "https://www.hiapi.ai/en/dashboard";
-export const HIAPI_PRICING_URL = "https://www.hiapi.ai/zh/pricing";
+export const HIAPI_PRICING_URL = "https://www.hiapi.ai/en/pricing";
 export const SUPPORTED_ASPECT_RATIOS = new Set([
   "auto",
   "1:1",

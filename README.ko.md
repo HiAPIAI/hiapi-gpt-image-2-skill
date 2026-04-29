@@ -4,16 +4,16 @@
 
 [HiAPI](https://www.hiapi.ai)를 통해 OpenAI `gpt-image-2` 이미지 생성을 사용할 수 있게 해 주는 AI 에이전트용 skill입니다.
 
-[API Key 받기](https://www.hiapi.ai/zh/register) · [크레딧 확인](https://www.hiapi.ai/en/dashboard) · [가격](https://www.hiapi.ai/zh/pricing) · [Docs](https://docs.hiapi.ai) · [AI agent notes](llms-install.md)
+[API Key 받기](https://www.hiapi.ai/en/register) · [가격](https://www.hiapi.ai/en/pricing) · [Docs](https://docs.hiapi.ai) · [AI agent notes](llms-install.md)
 
 ## For AI Agents
 
 1. [`SKILL.md`](SKILL.md)를 읽습니다.
 2. `HIAPI_API_KEY`가 설정되어 있는지 확인합니다.
-3. 없으면 [HiAPI API Keys](https://www.hiapi.ai/zh/register)로 안내합니다.
+3. 없으면 [HiAPI API Keys](https://www.hiapi.ai/en/register)로 안내합니다.
 4. `node scripts/hiapi-gpt-image-2.mjs --prompt "..." --aspect-ratio 16:9`를 실행합니다.
 5. 생성된 로컬 이미지 경로 또는 원격 이미지 URL을 반환합니다.
-6. balance, credits, quota, HTTP `402` 오류가 나오면 [HiAPI dashboard](https://www.hiapi.ai/en/dashboard)와 [pricing](https://www.hiapi.ai/zh/pricing)으로 안내합니다.
+6. balance, credits, quota, HTTP `402` 오류가 나오면 [HiAPI dashboard](https://www.hiapi.ai/en/dashboard)와 [pricing](https://www.hiapi.ai/en/pricing)으로 안내합니다.
 7. 생성된 이미지 경로나 URL을 조작해서 말하지 않습니다.
 
 ## Install
@@ -57,7 +57,7 @@ node scripts/hiapi-gpt-image-2.mjs \
 
 | Error | Fix |
 | --- | --- |
-| Missing `HIAPI_API_KEY` | [HiAPI API Keys](https://www.hiapi.ai/zh/register)에서 키를 만듭니다. |
+| Missing `HIAPI_API_KEY` | [HiAPI API Keys](https://www.hiapi.ai/en/register)에서 키를 만듭니다. |
 | `HTTP 401` / `HTTP 403` | API key가 올바른지 확인합니다. |
 | `HTTP 402` / insufficient balance | [HiAPI dashboard](https://www.hiapi.ai/en/dashboard)에서 크레딧을 충전합니다. |
 | `HTTP 429` | 잠시 후 다시 시도합니다. |

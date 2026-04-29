@@ -170,7 +170,7 @@ node scripts/hiapi-gpt-image-2.mjs \
 | --- | --- |
 | `HIAPI_API_KEY is required` | 去 [免费获取 API Key](https://www.hiapi.ai/zh/register) 创建 Key，然后设置 `HIAPI_API_KEY`。 |
 | `401 Unauthorized` | 检查 API Key 是否正确，或重新生成 Key。 |
-| `402 Payment Required` / 余额不足 | 进入 [HiAPI Dashboard](https://www.hiapi.ai/en/dashboard) 检查账号状态。 |
+| `402 Payment Required` / 余额不足 | 进入 [HiAPI Dashboard](https://www.hiapi.ai/zh/dashboard) 检查账号状态。 |
 | `429 Too Many Requests` | 稍后重试，或减少并发生成请求。 |
 | 内容被拦截 | 提示词触发了内容安全策略，请修改描述。 |
 | 没有图片输出 | 检查接口返回内容；该 skill 期望 `choices[0].message.content` 中包含图片。 |
