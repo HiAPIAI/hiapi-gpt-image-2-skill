@@ -55,7 +55,15 @@ Use $hiapi-gpt-image-2 to generate a 16:9 launch poster through HiAPI. If my API
 
 ---
 
-## What This Skill Does
+## What Is This?
+
+An AI skill plugin for OpenClaw, Claude Code, OpenCode, Codex-style agents, and other local agent runtimes. Powered by [HiAPI](https://www.hiapi.ai), it lets your AI Agent generate images with GPT Image 2.
+
+| Skill | Description | Model |
+| --- | --- | --- |
+| HiAPI GPT Image 2 | Text-to-image generation through HiAPI | GPT Image 2 |
+
+## Capability Summary
 
 | Area | Details |
 | --- | --- |
@@ -63,18 +71,10 @@ Use $hiapi-gpt-image-2 to generate a 16:9 launch poster through HiAPI. If my API
 | Model | `gpt-image-2` |
 | Provider | [HiAPI](https://www.hiapi.ai) |
 | Endpoint | `POST /v1/chat/completions` |
-| Use case | Text-to-image generation |
+| Capability | Text-to-image generation |
 | Aspect ratios | `auto`, `1:1`, `16:9`, `9:16`, `4:3`, `3:4` |
 | Output | Local image files or remote image URLs |
 | Runtime | Node.js 18+ |
-
-Why it is useful:
-
-- Focused on one model, so there is no routing ambiguity.
-- Gives agents exact instructions instead of making them infer API details.
-- Sends users to HiAPI when they need an API key, credits, pricing, or documentation.
-- Handles common failure states with actionable messages.
-- Saves base64 image results as local files automatically.
 
 ---
 

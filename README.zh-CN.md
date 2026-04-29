@@ -24,15 +24,15 @@
 使用 $hiapi-gpt-image-2 通过 HiAPI 生成一张 16:9 的产品发布海报。如果我没有配置 API Key 或余额不足，请告诉我去哪里配置。
 ```
 
-## 为什么用这个 Skill
+## 这是什么？
 
-- 专注一个模型：`gpt-image-2`，不混入多模型路由。
-- 安装、API Key、充值、价格入口都放在首页。
-- 缺 Key、Key 无效、余额不足、限流、安全策略等错误都有明确提示。
-- Agent 不需要猜接口，直接按 `SKILL.md` 和脚本执行。
-- base64 图片会保存到本地 `outputs/`，URL 图片会直接返回 URL。
+一个适用于 OpenClaw / Claude Code / OpenCode / Codex 类 Agent 的 AI 技能插件，由 [HiAPI](https://www.hiapi.ai) 驱动。安装后，你的 AI Agent 即可使用 GPT Image 2 模型进行图片生成。
 
-## 基本信息
+| 技能 | 描述 | 模型 |
+| --- | --- | --- |
+| HiAPI GPT Image 2 | 通过 HiAPI 进行文生图 | GPT Image 2 |
+
+## 能力概览
 
 | 项目 | 内容 |
 | --- | --- |
@@ -40,7 +40,7 @@
 | 模型 | `gpt-image-2` |
 | 服务 | HiAPI |
 | 端点 | `POST /v1/chat/completions` |
-| 用途 | 文生图 |
+| 能力 | 文生图 |
 | 输出 | 本地图片文件或远程图片 URL |
 | 运行环境 | Node.js 18+ |
 
