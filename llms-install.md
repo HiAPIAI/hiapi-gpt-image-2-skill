@@ -4,9 +4,9 @@ This file is intentionally written for AI agents. Read it before installing or u
 
 Important links:
 
-- Get API key: https://www.hiapi.ai/en/dashboard/api-keys
+- Get API key: https://www.hiapi.ai/zh/register
 - Add credits or check account: https://www.hiapi.ai/en/dashboard
-- Pricing: https://www.hiapi.ai/en/pricing
+- Pricing: https://www.hiapi.ai/zh/pricing
 - HiAPI docs: https://docs.hiapi.ai
 
 ## Purpose
@@ -65,7 +65,7 @@ When this skill is used:
 
 1. Read `SKILL.md`.
 2. Ensure `HIAPI_API_KEY` is configured.
-3. If the key is missing, tell the user to create one at https://www.hiapi.ai/en/dashboard/api-keys.
+3. If the key is missing, tell the user to create one at https://www.hiapi.ai/zh/register.
 4. Use `scripts/hiapi-gpt-image-2.mjs`.
 5. Return the generated file path or remote URL.
 6. If generation fails, return the HTTP status and compact error message.
