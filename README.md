@@ -271,16 +271,11 @@ Common output:
 </details>
 
 <details>
-<summary><strong>Current Scope</strong></summary>
+<summary><strong>Related HiAPI Options</strong></summary>
 
-This first version is intentionally focused:
+Use this skill when you specifically want `gpt-image-2` text-to-image generation through HiAPI.
 
-- Text-to-image only.
-- `gpt-image-2` only.
-- No image editing or reference image input yet.
-- No multi-model routing yet.
-
-For all HiAPI image and video models, use [HiAPI MCP](https://docs.hiapi.ai) or wait for a broader multi-model HiAPI skill.
+For HiAPI image editing, video generation, and other image/video models, use [HiAPI MCP](https://docs.hiapi.ai) or the model-specific HiAPI API documentation.
 
 </details>
 
