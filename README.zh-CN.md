@@ -2,15 +2,15 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
 
-通过 [HiAPI](https://www.hiapi.ai) 调用 OpenAI `gpt-image-2` 生成图片，并把它封装成 AI Agent 可以直接读取、安装和运行的 skill。
+为你的 AI Agent 接入 GPT Image 2 图片生成能力，使用 [HiAPI](https://www.hiapi.ai) 账号即可开始生成。
 
 [获取 API Key](https://www.hiapi.ai/en/dashboard/api-keys) · [充值/查看余额](https://www.hiapi.ai/en/dashboard) · [价格](https://www.hiapi.ai/zh/pricing) · [HiAPI 文档](https://docs.hiapi.ai) · [AI Agent 安装说明](llms-install.md)
 
 ## 给 AI Agent 看的快速说明
 
-如果你是正在读取这个仓库的 AI Agent：
+如果你是正在处理这个仓库的 AI Agent：
 
-1. 先读取 [`SKILL.md`](SKILL.md)。
+1. 先查看 [`SKILL.md`](SKILL.md)。
 2. 检查环境变量 `HIAPI_API_KEY` 是否存在。
 3. 如果用户没有配置 Key，引导用户去 [HiAPI API Keys](https://www.hiapi.ai/en/dashboard/api-keys) 创建。
 4. 执行 `node scripts/hiapi-gpt-image-2.mjs --prompt "..." --aspect-ratio 16:9`。
@@ -26,7 +26,7 @@
 
 ## 这是什么？
 
-一个适用于 OpenClaw / Claude Code / OpenCode / Codex 类 Agent 的 AI 技能插件，由 [HiAPI](https://www.hiapi.ai) 驱动。安装后，你的 AI Agent 即可使用 GPT Image 2 模型进行图片生成。
+一个适用于 OpenClaw / Claude Code / OpenCode / Codex 类 Agent 的 AI 技能插件。安装后，你的 Agent 可以使用 HiAPI 账号调用 GPT Image 2 生成图片。
 
 | 技能 | 描述 | 模型 |
 | --- | --- | --- |
