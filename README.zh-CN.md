@@ -6,7 +6,7 @@
 
 [免费获取 API Key](https://www.hiapi.ai/zh/register) · [查看价格](https://www.hiapi.ai/zh/pricing) · [HiAPI 文档](https://docs.hiapi.ai)
 
-Languages: [English](README.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md) | [한국어](README.ko.md)
+Languages: [English](README.md) | [简体中文](README.zh-CN.md)
 
 ---
 
@@ -144,8 +144,6 @@ node scripts/hiapi-gpt-image-2.mjs \
 .
 ├── README.md
 ├── README.zh-CN.md
-├── README.ja.md
-├── README.ko.md
 ├── SKILL.md
 ├── agents/
 │   └── openai.yaml

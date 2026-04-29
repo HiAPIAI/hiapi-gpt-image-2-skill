@@ -16,7 +16,7 @@ GPT Image 2 image generation for AI Agents.
 [Docs](https://docs.hiapi.ai) ·
 [AI Agent Notes](llms-install.md)
 
-[English](README.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
+[English](README.md) · [简体中文](README.zh-CN.md)
 
 </div>
 
@@ -250,8 +250,6 @@ Common output:
 .
 ├── README.md
 ├── README.zh-CN.md
-├── README.ja.md
-├── README.ko.md
 ├── SKILL.md
 ├── agents/
 │   └── openai.yaml
