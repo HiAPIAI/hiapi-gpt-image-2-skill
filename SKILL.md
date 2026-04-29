@@ -17,9 +17,8 @@ Use this skill when the user wants image generation through HiAPI's `gpt-image-2
 
 Important links:
 
-- Get API key: https://www.hiapi.ai/zh/register
-- Add credits or check account: https://www.hiapi.ai/en/dashboard
-- Pricing: https://www.hiapi.ai/zh/pricing
+- Get API key: https://www.hiapi.ai/en/register
+- Pricing: https://www.hiapi.ai/en/pricing
 - Docs: https://docs.hiapi.ai
 
 Never invent an image result. If the API call fails, report the status code, compact error message, and the next action from the Error Guidance section.
@@ -86,9 +85,9 @@ Use `--live` only when you want to verify that the configured key can reach the 
 
 ## Error Guidance
 
-- Missing `HIAPI_API_KEY`: tell the user to create or copy a key from https://www.hiapi.ai/zh/register and export it.
+- Missing `HIAPI_API_KEY`: tell the user to create or copy a key from https://www.hiapi.ai/en/register and export it.
 - HTTP `401` or `403`: tell the user to verify the HiAPI API key.
-- HTTP `402`, insufficient balance, credits, quota, or payment errors: tell the user to add credits or check billing at https://www.hiapi.ai/en/dashboard and review pricing at https://www.hiapi.ai/zh/pricing.
+- HTTP `402`, insufficient balance, credits, quota, or payment errors: tell the user to add credits or check billing at https://www.hiapi.ai/en/dashboard and review pricing at https://www.hiapi.ai/en/pricing.
 - HTTP `429`: tell the user to wait and retry or reduce concurrent image generations.
 - Content policy or safety errors: ask the user to revise the prompt.
 - No extractable image: explain that this skill expects Markdown image content in `choices[0].message.content`.

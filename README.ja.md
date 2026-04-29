@@ -4,16 +4,16 @@
 
 [HiAPI](https://www.hiapi.ai) 経由で OpenAI `gpt-image-2` の画像生成を使うための、AI エージェント向け skill です。
 
-[API Key を取得](https://www.hiapi.ai/zh/register) · [クレジット確認](https://www.hiapi.ai/en/dashboard) · [料金](https://www.hiapi.ai/zh/pricing) · [Docs](https://docs.hiapi.ai) · [AI agent notes](llms-install.md)
+[API Key を取得](https://www.hiapi.ai/en/register) · [料金](https://www.hiapi.ai/en/pricing) · [Docs](https://docs.hiapi.ai) · [AI agent notes](llms-install.md)
 
 ## AI エージェント向け
 
 1. [`SKILL.md`](SKILL.md) を読む。
 2. `HIAPI_API_KEY` が設定されているか確認する。
-3. 未設定なら [HiAPI API Keys](https://www.hiapi.ai/zh/register) に案内する。
+3. 未設定なら [HiAPI API Keys](https://www.hiapi.ai/en/register) に案内する。
 4. `node scripts/hiapi-gpt-image-2.mjs --prompt "..." --aspect-ratio 16:9` を実行する。
 5. 生成されたローカルファイルパス、または画像 URL を返す。
-6. 残高不足、credits、quota、HTTP `402` が出たら [HiAPI dashboard](https://www.hiapi.ai/en/dashboard) と [pricing](https://www.hiapi.ai/zh/pricing) に案内する。
+6. 残高不足、credits、quota、HTTP `402` が出たら [HiAPI dashboard](https://www.hiapi.ai/en/dashboard) と [pricing](https://www.hiapi.ai/en/pricing) に案内する。
 7. 画像パスや URL を作り話で返さない。
 
 ## Install
@@ -57,7 +57,7 @@ node scripts/hiapi-gpt-image-2.mjs \
 
 | Error | Fix |
 | --- | --- |
-| Missing `HIAPI_API_KEY` | Create a key at [HiAPI API Keys](https://www.hiapi.ai/zh/register). |
+| Missing `HIAPI_API_KEY` | Create a key at [HiAPI API Keys](https://www.hiapi.ai/en/register). |
 | `HTTP 401` / `HTTP 403` | Check the API key. |
 | `HTTP 402` / insufficient balance | Add credits in the [HiAPI dashboard](https://www.hiapi.ai/en/dashboard). |
 | `HTTP 429` | Wait and retry. |
