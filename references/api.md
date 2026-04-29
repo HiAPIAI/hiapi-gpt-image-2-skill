@@ -24,14 +24,14 @@ Do not print API keys in logs or final answers.
 If the user does not have a key, send them to:
 
 ```text
-https://www.hiapi.ai/en/dashboard/api-keys
+https://www.hiapi.ai/zh/register
 ```
 
 If generation fails because of balance, credits, quota, or payment status, send them to:
 
 ```text
 https://www.hiapi.ai/en/dashboard
-https://www.hiapi.ai/en/pricing
+https://www.hiapi.ai/zh/pricing
 ```
 
 ## Request Body
