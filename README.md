@@ -2,15 +2,16 @@
 
 # HiAPI GPT Image 2 Skill
 
-Add GPT Image 2 image generation to your AI Agent with HiAPI.
+GPT Image 2 image generation for AI Agents.
 
 [![Skill](https://img.shields.io/badge/Skill-hiapi--gpt--image--2-10A37F)](SKILL.md)
 [![Model](https://img.shields.io/badge/Model-gpt--image--2-blue)](https://www.hiapi.ai)
 [![Runtime](https://img.shields.io/badge/Node.js-18%2B-339933)](package.json)
 [![License](https://img.shields.io/badge/License-MIT-black)](LICENSE)
 
+**GPT Image 2 • Install • API Key • [HiAPI](https://www.hiapi.ai)**
+
 [Get API Key](https://www.hiapi.ai/en/dashboard/api-keys) ·
-[Add Credits](https://www.hiapi.ai/en/dashboard) ·
 [Pricing](https://www.hiapi.ai/en/pricing) ·
 [Docs](https://docs.hiapi.ai) ·
 [AI Agent Notes](llms-install.md)

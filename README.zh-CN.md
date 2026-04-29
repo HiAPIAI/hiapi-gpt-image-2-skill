@@ -1,85 +1,78 @@
-# HiAPI GPT Image 2 Skill
+# GPT Image 2 图像生成技能
 
-[English](README.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
+GPT Image 2 AI 图像生成，一次安装，让你的 AI Agent 直接生成图片。
 
-为你的 AI Agent 接入 GPT Image 2 图片生成能力，使用 [HiAPI](https://www.hiapi.ai) 账号即可开始生成。
+**GPT Image 2 • 安装 • API Key • [HiAPI](https://www.hiapi.ai)**
 
-[获取 API Key](https://www.hiapi.ai/en/dashboard/api-keys) · [充值/查看余额](https://www.hiapi.ai/en/dashboard) · [价格](https://www.hiapi.ai/zh/pricing) · [HiAPI 文档](https://docs.hiapi.ai) · [AI Agent 安装说明](llms-install.md)
+Languages: [English](README.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md) | [한국어](README.ko.md)
 
-## 给 AI Agent 看的快速说明
+---
 
-如果你是正在处理这个仓库的 AI Agent：
+> AI Agent? 跳过 README，直接看 [llms-install.md](llms-install.md)，里面有专为 Agent 准备的安装步骤和错误处理规则。
 
-1. 先查看 [`SKILL.md`](SKILL.md)。
-2. 检查环境变量 `HIAPI_API_KEY` 是否存在。
-3. 如果用户没有配置 Key，引导用户去 [HiAPI API Keys](https://www.hiapi.ai/en/dashboard/api-keys) 创建。
-4. 执行 `node scripts/hiapi-gpt-image-2.mjs --prompt "..." --aspect-ratio 16:9`。
-5. 返回生成后的本地图片路径或远程图片 URL。
-6. 如果接口提示余额、credits、quota 或 HTTP `402`，引导用户去 [HiAPI Dashboard](https://www.hiapi.ai/en/dashboard) 充值或检查账单。
-7. 不要伪造生成成功、图片路径或图片 URL。
-
-可直接复制给 Agent 的提示词：
-
-```text
-使用 $hiapi-gpt-image-2 通过 HiAPI 生成一张 16:9 的产品发布海报。如果我没有配置 API Key 或余额不足，请告诉我去哪里配置。
-```
+---
 
 ## 这是什么？
 
-一个适用于 OpenClaw / Claude Code / OpenCode / Codex 类 Agent 的 AI 技能插件。安装后，你的 Agent 可以使用 HiAPI 账号调用 GPT Image 2 生成图片。
+一个适用于 OpenClaw / Claude Code / OpenCode / Codex 类 Agent 的 AI 技能插件。安装后，你的 AI Agent 可以通过 HiAPI 使用 GPT Image 2 进行图像生成。
 
 | 技能 | 描述 | 模型 |
 | --- | --- | --- |
-| HiAPI GPT Image 2 | 通过 HiAPI 进行文生图 | GPT Image 2 |
+| HiAPI GPT Image 2 | 文生图 | GPT Image 2 |
 
-## 能力概览
-
-| 项目 | 内容 |
-| --- | --- |
-| Skill 名称 | `hiapi-gpt-image-2` |
-| 模型 | `gpt-image-2` |
-| 服务 | HiAPI |
-| 端点 | `POST /v1/chat/completions` |
-| 能力 | 文生图 |
-| 输出 | 本地图片文件或远程图片 URL |
-| 运行环境 | Node.js 18+ |
+---
 
 ## 安装
 
-克隆仓库：
+### 快速安装（OpenClaw）
+
+```bash
+openclaw skills add https://github.com/HiAPIAI/hiapi-gpt-image-2-skill
+```
+
+### 安装到 Codex
 
 ```bash
 git clone https://github.com/HiAPIAI/hiapi-gpt-image-2-skill.git
 cd hiapi-gpt-image-2-skill
 npm test
-```
 
-安装到 Codex：
-
-```bash
 mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
 cp -R . "${CODEX_HOME:-$HOME/.codex}/skills/hiapi-gpt-image-2"
 ```
 
 复制后重启 Codex。
 
-其他 Agent 运行时可以把本目录复制或软链接到对应的 skills 目录：
+### 手动安装到任意 Agent
 
 ```bash
+git clone https://github.com/HiAPIAI/hiapi-gpt-image-2-skill.git
 export AGENT_SKILLS_DIR="/path/to/your/agent/skills"
 mkdir -p "$AGENT_SKILLS_DIR"
-ln -s "$PWD" "$AGENT_SKILLS_DIR/hiapi-gpt-image-2"
+cp -R hiapi-gpt-image-2-skill "$AGENT_SKILLS_DIR/hiapi-gpt-image-2"
 ```
 
-## 配置 HiAPI
+将 `AGENT_SKILLS_DIR` 替换为你的 Agent 技能目录。
 
-创建 API Key：
+### Agent 自动安装（复制给你的 Agent）
 
 ```text
-https://www.hiapi.ai/en/dashboard/api-keys
+安装 HiAPI GPT Image 2 图像生成技能：
+
+1. 克隆 https://github.com/HiAPIAI/hiapi-gpt-image-2-skill
+2. 把仓库复制到你的技能目录，目录名使用 hiapi-gpt-image-2
+3. 设置环境变量 HIAPI_API_KEY
+4. 读取 SKILL.md 了解使用方法
 ```
 
-设置环境变量：
+---
+
+## 获取 API Key
+
+1. 打开 [HiAPI API Keys](https://www.hiapi.ai/en/dashboard/api-keys)
+2. 登录或注册 HiAPI 账号
+3. 创建新的 API Key
+4. 在运行 Agent 的终端设置环境变量：
 
 ```bash
 export HIAPI_API_KEY="your_hiapi_api_key_here"
@@ -98,21 +91,31 @@ node scripts/check-config.mjs
 node scripts/check-config.mjs --live
 ```
 
-## 使用示例
+---
 
-```text
-使用 $hiapi-gpt-image-2 为一个 AI 写作应用生成 16:9 产品发布海报。
-```
+## GPT Image 2 图像生成
 
-```text
-通过 HiAPI GPT Image 2 生成一个 1:1 的开发者工具 App 图标概念图。
-```
+通过自然语言让你的 AI Agent 生成图片。
 
-```text
-用 GPT Image 2 生成一张 9:16 社交媒体海报，标题文字是「Build Faster」。
-```
+### 功能
 
-## CLI 用法
+- 文生图：描述你想要的画面，生成图片
+- 多种比例：`auto`、`1:1`、`16:9`、`9:16`、`4:3`、`3:4`
+- 本地输出：图片会保存到 `outputs/`
+- URL 输出：如果 HiAPI 返回图片 URL，Agent 会直接返回 URL
+- 错误提示：未配置 Key、Key 无效、余额不足、限流、内容安全拦截都有明确下一步
+
+### 使用示例
+
+直接和你的 AI Agent 对话：
+
+> 使用 `$hiapi-gpt-image-2` 生成一张海面日落的 16:9 图片。
+
+> 用 HiAPI GPT Image 2 创建一个极简 Logo，比例 1:1。
+
+> 生成一张 9:16 社交媒体海报，标题文字是「Build Faster」。
+
+### 命令行脚本
 
 ```bash
 node scripts/hiapi-gpt-image-2.mjs \
@@ -120,53 +123,72 @@ node scripts/hiapi-gpt-image-2.mjs \
   --aspect-ratio 16:9
 ```
 
-## 错误处理
+自定义输出目录：
 
-| 错误 | 处理方式 |
-| --- | --- |
-| `HIAPI_API_KEY is required` | 去 [HiAPI API Keys](https://www.hiapi.ai/en/dashboard/api-keys) 创建 Key，然后设置 `HIAPI_API_KEY`。 |
-| `HTTP 401` 或 `HTTP 403` | 检查 API Key 是否有效、是否复制完整。 |
-| `HTTP 402`、余额不足、credits、quota | 去 [HiAPI Dashboard](https://www.hiapi.ai/en/dashboard) 充值或检查账单，价格见 [Pricing](https://www.hiapi.ai/zh/pricing)。 |
-| `HTTP 429` | 稍后重试，或减少并发生成请求。 |
-| 内容安全策略错误 | 修改 prompt 后重试。 |
-| 没有提取到图片 | 该 skill 期望 `choices[0].message.content` 中包含 Markdown 图片。 |
-
-## API 合同
-
-```http
-POST https://api.hiapi.ai/v1/chat/completions
-Authorization: Bearer $HIAPI_API_KEY
-Content-Type: application/json
+```bash
+node scripts/hiapi-gpt-image-2.mjs \
+  --prompt "Minimal poster for an AI image API, premium tech brand style" \
+  --aspect-ratio 1:1 \
+  --output-dir ./outputs
 ```
 
-```json
-{
-  "model": "gpt-image-2",
-  "stream": false,
-  "messages": [
-    {
-      "role": "user",
-      "content": "Create a launch poster for an AI note-taking app"
-    }
-  ],
-  "extra_body": {
-    "google": {
-      "image_config": {
-        "aspect_ratio": "16:9"
-      }
-    }
-  }
-}
-```
+---
 
-返回图片通常在：
+## 文件结构
 
 ```text
-choices[0].message.content
+.
+├── README.md
+├── README.zh-CN.md
+├── README.ja.md
+├── README.ko.md
+├── SKILL.md
+├── agents/
+│   └── openai.yaml
+├── references/
+│   ├── api.md
+│   └── output.md
+├── scripts/
+│   ├── check-config.mjs
+│   ├── hiapi-gpt-image-2.mjs
+│   └── lib/
+│       └── gpt-image-2.mjs
+├── tests/
+│   └── gpt-image-2.test.mjs
+└── llms-install.md
 ```
 
-## 相关 HiAPI 能力
+---
 
-这个 skill 适合在明确使用 `gpt-image-2` 文生图时使用。
+## 常见问题
 
-如果需要图片编辑、视频生成或其他 HiAPI 图像/视频模型，请使用 [HiAPI MCP](https://docs.hiapi.ai) 或对应的 HiAPI API 文档。
+| 问题 | 解决方案 |
+| --- | --- |
+| `HIAPI_API_KEY is required` | 去 [HiAPI API Keys](https://www.hiapi.ai/en/dashboard/api-keys) 创建 Key，然后设置 `HIAPI_API_KEY`。 |
+| `401 Unauthorized` | 检查 API Key 是否正确，或重新生成 Key。 |
+| `402 Payment Required` / 余额不足 | 进入 [HiAPI Dashboard](https://www.hiapi.ai/en/dashboard) 检查账号状态。 |
+| `429 Too Many Requests` | 稍后重试，或减少并发生成请求。 |
+| 内容被拦截 | 提示词触发了内容安全策略，请修改描述。 |
+| 没有图片输出 | 检查接口返回内容；该 skill 期望 `choices[0].message.content` 中包含图片。 |
+
+---
+
+## 兼容性
+
+| Agent | 安装方式 |
+| --- | --- |
+| OpenClaw | `openclaw skills add https://github.com/HiAPIAI/hiapi-gpt-image-2-skill` |
+| Codex | 复制到 `${CODEX_HOME:-$HOME/.codex}/skills/hiapi-gpt-image-2` |
+| Claude Code | 复制到 `~/.claude/skills/hiapi-gpt-image-2` |
+| OpenCode | 复制到 `~/.opencode/skills/hiapi-gpt-image-2` |
+| Cursor / 其他 Agent | 复制到对应技能目录 |
+
+---
+
+## 许可证
+
+MIT
+
+---
+
+[HiAPI](https://www.hiapi.ai) — 统一 AI API 网关
