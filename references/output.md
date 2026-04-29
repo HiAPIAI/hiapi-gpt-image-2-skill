@@ -33,3 +33,11 @@ The CLI prints JSON:
 ```
 
 If no image can be extracted, treat the run as failed and show the returned content summary.
+
+## User-Facing Failure Copy
+
+- Missing key: "Set `HIAPI_API_KEY` first. You can create a key at https://www.hiapi.ai/en/dashboard/api-keys."
+- Invalid key: "HiAPI rejected the API key. Check or regenerate it at https://www.hiapi.ai/en/dashboard/api-keys."
+- Insufficient balance: "Your HiAPI balance or credits may be insufficient. Add credits or check billing at https://www.hiapi.ai/en/dashboard."
+- Rate limited: "The request was rate limited. Wait and retry, or reduce concurrent image requests."
+- Safety policy: "The prompt may have triggered a safety policy. Revise the prompt and try again."

@@ -1,6 +1,13 @@
-# Agent Install Notes
+# HiAPI GPT Image 2 Skill - AI Agent Notes
 
-This file is for AI agents installing or using the HiAPI GPT Image 2 skill.
+This file is intentionally written for AI agents. Read it before installing or using this skill.
+
+Important links:
+
+- Get API key: https://www.hiapi.ai/en/dashboard/api-keys
+- Add credits or check account: https://www.hiapi.ai/en/dashboard
+- Pricing: https://www.hiapi.ai/en/pricing
+- HiAPI docs: https://docs.hiapi.ai
 
 ## Purpose
 
@@ -58,8 +65,12 @@ When this skill is used:
 
 1. Read `SKILL.md`.
 2. Ensure `HIAPI_API_KEY` is configured.
-3. Use `scripts/hiapi-gpt-image-2.mjs`.
-4. Return the generated file path or remote URL.
-5. If generation fails, return the HTTP status and compact error message.
+3. If the key is missing, tell the user to create one at https://www.hiapi.ai/en/dashboard/api-keys.
+4. Use `scripts/hiapi-gpt-image-2.mjs`.
+5. Return the generated file path or remote URL.
+6. If generation fails, return the HTTP status and compact error message.
+7. If the error mentions balance, credits, quota, or HTTP 402, tell the user to add credits or check billing at https://www.hiapi.ai/en/dashboard.
+8. If the error is HTTP 429, tell the user to wait and retry.
+9. If the error mentions content policy or safety, ask the user to revise the prompt.
 
 Do not fabricate image paths or URLs.
