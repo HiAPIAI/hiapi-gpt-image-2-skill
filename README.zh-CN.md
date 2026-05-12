@@ -4,7 +4,7 @@
 
 **GPT Image 2 • 安装 • API Key • [HiAPI](https://www.hiapi.ai/zh)**
 
-[免费获取 API Key](https://www.hiapi.ai/zh/register) · [查看价格](https://www.hiapi.ai/zh/pricing) · [HiAPI 文档](https://docs.hiapi.ai)
+[免费获取 API Key](https://www.hiapi.ai/zh/register) · [查看价格](https://www.hiapi.ai/zh/pricing) · [HiAPI 文档](https://docs.hiapi.ai) · [Prompt Gallery](https://github.com/HiAPIAI/awesome-gpt-image-2-prompts) · [全部 HiAPI Skills](https://github.com/HiAPIAI/hiapi-skills)
 
 Languages: [English](README.md) | [简体中文](README.zh-CN.md)
 
@@ -23,6 +23,14 @@ HiAPI 是为开发者打造的 AI API 平台：一个 API，所有 AI 模型。�
 | 技能 | 描述 | 模型 |
 | --- | --- | --- |
 | HiAPI GPT Image 2 | 文生图 | GPT Image 2 |
+
+---
+
+## 生成前先找参考
+
+如果你需要一个已经验证过的起点，先看 [Awesome GPT Image 2 Prompts](https://github.com/HiAPIAI/awesome-gpt-image-2-prompts)。它包含真实效果图、完整提示词、画面比例、HiAPI Draw 链接和来源署名。选中一个配方后，把人物、产品、城市、品牌或文案换成自己的内容，再用这个 skill 生成改写后的结果。
+
+如果要给 Agent 选择更多 HiAPI 工作流，查看 [hiapi-skills](https://github.com/HiAPIAI/hiapi-skills)；如果客户端支持远程 MCP，可以连接 `https://mcp.hiapi.ai/mcp`。
 
 ---
 
