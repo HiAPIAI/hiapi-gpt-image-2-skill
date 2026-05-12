@@ -7,6 +7,9 @@ Important links:
 - Get API key: https://www.hiapi.ai/en/register
 - Pricing: https://www.hiapi.ai/en/pricing
 - HiAPI docs: https://docs.hiapi.ai
+- Prompt gallery: https://github.com/HiAPIAI/awesome-gpt-image-2-prompts
+- HiAPI skills directory: https://github.com/HiAPIAI/hiapi-skills
+- Remote MCP: https://mcp.hiapi.ai/mcp
 
 ## Purpose
 
@@ -57,6 +60,16 @@ node scripts/hiapi-gpt-image-2.mjs \
   --prompt "Create a 16:9 launch poster for an AI writing app" \
   --aspect-ratio 16:9
 ```
+
+## Prompt Recipe Source
+
+If the user asks for examples, visual styles, prompt ideas, or a starting point, read:
+
+```text
+https://github.com/HiAPIAI/awesome-gpt-image-2-prompts
+```
+
+Use that repository as an API-ready creative recipe source. Choose a case by output image and category, preserve creator/source attribution when presenting it, adapt the prompt to the user's subject, then run this skill with the selected aspect ratio.
 
 ## Agent Behavior
 

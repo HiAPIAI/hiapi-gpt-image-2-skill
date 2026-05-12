@@ -4,7 +4,7 @@ Add GPT Image 2 image generation to your AI Agent.
 
 **GPT Image 2 • Install • API Key • [HiAPI](https://www.hiapi.ai)**
 
-[Get API Key](https://www.hiapi.ai/en/register) · [Pricing](https://www.hiapi.ai/en/pricing) · [HiAPI Docs](https://docs.hiapi.ai)
+[Get API Key](https://www.hiapi.ai/en/register) · [Pricing](https://www.hiapi.ai/en/pricing) · [HiAPI Docs](https://docs.hiapi.ai) · [Prompt Gallery](https://github.com/HiAPIAI/awesome-gpt-image-2-prompts) · [All HiAPI Skills](https://github.com/HiAPIAI/hiapi-skills)
 
 Languages: [English](README.md) | [简体中文](README.zh-CN.md)
 
@@ -23,6 +23,14 @@ HiAPI is an AI API platform built for developers: one API for all AI models. Ima
 | Skill | Description | Model |
 | --- | --- | --- |
 | HiAPI GPT Image 2 | Text-to-image generation | GPT Image 2 |
+
+---
+
+## Before You Generate
+
+Need a tested starting point? Browse [Awesome GPT Image 2 Prompts](https://github.com/HiAPIAI/awesome-gpt-image-2-prompts) first. It contains output-backed visual recipes with full prompts, aspect ratios, HiAPI Draw links, and source attribution. Pick a recipe, replace the subject, product, city, brand, or copy, then use this skill to generate the adapted result.
+
+For broader agent integration, use [hiapi-skills](https://github.com/HiAPIAI/hiapi-skills) as the directory or connect Remote MCP at `https://mcp.hiapi.ai/mcp`.
 
 ---
 
