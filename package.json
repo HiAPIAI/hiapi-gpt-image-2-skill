@@ -17,6 +17,7 @@
     "image-generation"
   ],
   "bin": {
+    "hiapi-gpt-image-2-skill": "./scripts/install.mjs",
     "hiapi-gpt-image-2": "./scripts/hiapi-gpt-image-2.mjs",
     "hiapi-gpt-image-2-check": "./scripts/check-config.mjs"
   },
