@@ -36,26 +36,30 @@ For broader agent integration, use [hiapi-skills](https://github.com/HiAPIAI/hia
 
 ## Install
 
-### Quick Install (OpenClaw)
+### One Command (Recommended)
+
+```bash
+npx -y github:HiAPIAI/hiapi-gpt-image-2-skill -y
+```
+
+The installer auto-detects Codex (`~/.codex/skills`) and Claude Code (`~/.claude/skills`). If both exist, the `-y` flag installs to both. To target a specific agent or directory:
+
+```bash
+npx -y github:HiAPIAI/hiapi-gpt-image-2-skill --codex          # ~/.codex/skills only
+npx -y github:HiAPIAI/hiapi-gpt-image-2-skill --claude         # ~/.claude/skills only
+npx -y github:HiAPIAI/hiapi-gpt-image-2-skill --target=/path   # custom directory
+AGENT_SKILLS_DIR=/path npx -y github:HiAPIAI/hiapi-gpt-image-2-skill -y
+```
+
+The script also reports whether `HIAPI_API_KEY` is set and links to where to create one.
+
+### OpenClaw
 
 ```bash
 openclaw skills add https://github.com/HiAPIAI/hiapi-gpt-image-2-skill
 ```
 
-### Install Into Codex
-
-```bash
-git clone https://github.com/HiAPIAI/hiapi-gpt-image-2-skill.git
-cd hiapi-gpt-image-2-skill
-npm test
-
-mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
-cp -R . "${CODEX_HOME:-$HOME/.codex}/skills/hiapi-gpt-image-2"
-```
-
-Restart Codex after copying the skill.
-
-### Manual Install For Any Agent
+### Manual Install (Any Agent)
 
 ```bash
 git clone https://github.com/HiAPIAI/hiapi-gpt-image-2-skill.git
@@ -71,10 +75,10 @@ Replace `AGENT_SKILLS_DIR` with your agent's skill directory.
 ```text
 Install the HiAPI GPT Image 2 image generation skill:
 
-1. Clone https://github.com/HiAPIAI/hiapi-gpt-image-2-skill
-2. Copy the repository into your skill directory as hiapi-gpt-image-2
-3. Set the HIAPI_API_KEY environment variable
-4. Read SKILL.md for usage
+1. Run: npx -y github:HiAPIAI/hiapi-gpt-image-2-skill -y
+   (auto-detects Codex / Claude Code skill directories)
+2. Set the HIAPI_API_KEY environment variable from https://www.hiapi.ai/en/dashboard/api-keys
+3. Read SKILL.md for usage
 ```
 
 ---
@@ -187,11 +191,11 @@ node scripts/hiapi-gpt-image-2.mjs \
 
 | Agent | Install Method |
 | --- | --- |
+| Codex | `npx -y github:HiAPIAI/hiapi-gpt-image-2-skill --codex` |
+| Claude Code | `npx -y github:HiAPIAI/hiapi-gpt-image-2-skill --claude` |
 | OpenClaw | `openclaw skills add https://github.com/HiAPIAI/hiapi-gpt-image-2-skill` |
-| Codex | Copy to `${CODEX_HOME:-$HOME/.codex}/skills/hiapi-gpt-image-2` |
-| Claude Code | Copy to `~/.claude/skills/hiapi-gpt-image-2` |
-| OpenCode | Copy to `~/.opencode/skills/hiapi-gpt-image-2` |
-| Cursor / other agents | Copy to the corresponding skill directory |
+| OpenCode | `AGENT_SKILLS_DIR=~/.opencode/skills npx -y github:HiAPIAI/hiapi-gpt-image-2-skill -y` |
+| Cursor / other | `npx -y github:HiAPIAI/hiapi-gpt-image-2-skill --target=/your/skills/dir` |
 
 ---
 
