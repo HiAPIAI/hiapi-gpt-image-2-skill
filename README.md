@@ -32,6 +32,8 @@ HiAPI is an AI API platform built for developers: one API for all AI models. Ima
 
 Need a tested starting point? Browse [Awesome GPT Image 2 Prompts](https://github.com/HiAPIAI/awesome-gpt-image-2-prompts) first. It contains output-backed visual recipes with full prompts, aspect ratios, HiAPI Draw links, and source attribution. Pick a recipe, replace the subject, product, city, brand, or copy, then use this skill to generate the adapted result.
 
+If the generated image is meant as the starting frame of a video, plan the motion afterward with [hiapi-video-prompt-generator-skill](https://github.com/HiAPIAI/hiapi-video-prompt-generator-skill), then render with [hiapi-seedance-2-0-video-skill](https://github.com/HiAPIAI/hiapi-seedance-2-0-video-skill) (image-to-video).
+
 For broader agent integration, use [hiapi-skills](https://github.com/HiAPIAI/hiapi-skills) as the directory or connect Remote MCP at `https://mcp.hiapi.ai/mcp`.
 
 ---
