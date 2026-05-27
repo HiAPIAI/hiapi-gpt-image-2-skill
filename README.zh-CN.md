@@ -32,6 +32,8 @@ HiAPI 是为开发者打造的 AI API 平台：一个 API，所有 AI 模型。�
 
 如果你需要一个已经验证过的起点，先看 [Awesome GPT Image 2 Prompts](https://github.com/HiAPIAI/awesome-gpt-image-2-prompts)。它包含真实效果图、完整提示词、画面比例、HiAPI Draw 链接和来源署名。选中一个配方后，把人物、产品、城市、品牌或文案换成自己的内容，再用这个 skill 生成改写后的结果。
 
+如果生成的图是要作为视频的起始帧，接下来用 [hiapi-video-prompt-generator-skill](https://github.com/HiAPIAI/hiapi-video-prompt-generator-skill) 规划镜头，再交给 [hiapi-seedance-2-0-video-skill](https://github.com/HiAPIAI/hiapi-seedance-2-0-video-skill)（图生视频）出片。
+
 如果要给 Agent 选择更多 HiAPI 工作流，查看 [hiapi-skills](https://github.com/HiAPIAI/hiapi-skills)；如果客户端支持远程 MCP，可以连接 `https://mcp.hiapi.ai/mcp`。
 
 ---
