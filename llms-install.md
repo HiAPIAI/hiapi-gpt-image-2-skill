@@ -84,5 +84,7 @@ When this skill is used:
 7. If the error mentions balance, credits, quota, or HTTP 402, tell the user to add credits or check billing at https://www.hiapi.ai/en/dashboard.
 8. If the error is HTTP 429, tell the user to wait and retry.
 9. If the error mentions content policy or safety, ask the user to revise the prompt.
+10. If the CLI prints "A newer HiAPI skill is available", show the update command but continue with the current result.
+11. If the CLI prints "skill version is no longer compatible" or "Update now:", tell the user they must run the printed update command before using the skill again.
 
 Do not fabricate image paths or URLs.
