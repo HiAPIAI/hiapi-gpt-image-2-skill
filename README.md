@@ -120,7 +120,8 @@ Ask your AI Agent to generate images with natural language.
 ### Features
 
 - Text-to-image: describe the image you want and generate it
-- Aspect ratios: `auto`, `1:1`, `16:9`, `9:16`, `4:3`, `3:4`
+- Aspect ratios: `auto`, `1:1`, `3:2`, `2:3`, `4:3`, `3:4`, `5:4`, `4:5`, `16:9`, `9:16`, `2:1`, `1:2`, `3:1`, `1:3`, `21:9`, `9:21`
+- Resolutions: `1K`, `2K`, `4K`
 - Local output: images are saved to `outputs/`
 - URL output: if HiAPI returns an image URL, the Agent returns the URL directly
 - Clear errors: missing Key, invalid Key, insufficient balance, rate limits, and safety policy blocks all include a next step
@@ -187,7 +188,11 @@ node scripts/hiapi-gpt-image-2.mjs \
 | `402 Payment Required` / insufficient balance | Open the [HiAPI Dashboard](https://www.hiapi.ai/en/dashboard) and check your account status. |
 | `429 Too Many Requests` | Wait and retry, or reduce concurrent generation requests. |
 | Content blocked | The prompt triggered a safety policy. Revise the description. |
-| No image output | Check the API response; this skill expects an image in `choices[0].message.content`. |
+| No image output | Check the task response; this skill expects an image URL or data URI in `data.output[]` after the task succeeds. |
+| Skill update available | The CLI checks the HiAPI skills index at startup. If the update is optional, it prints the upgrade command and continues. |
+| Skill update required | The CLI stops and prints the required upgrade command. Run `npx -y github:HiAPIAI/hiapi-gpt-image-2-skill -y`, then restart your agent. |
+
+Set `HIAPI_SKIP_UPDATE_CHECK=1` only for offline or locked-down environments where the skills index cannot be reached.
 
 ---
 

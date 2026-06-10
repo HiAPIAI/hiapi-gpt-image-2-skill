@@ -2,12 +2,14 @@
 import path from "node:path";
 
 import {
-  buildChatPayload,
-  callHiApi,
-  extractImageOutputs,
+  buildImagePayload,
+  createImageTask,
+  extractTaskId,
   MODEL,
   resolveConfig,
   saveImageOutputs,
+  warnOrRequireSkillUpdate,
+  waitForImage,
 } from "./lib/gpt-image-2.mjs";
 
 function parseArgs(argv) {
@@ -25,8 +27,14 @@ function parseArgs(argv) {
       options.prompt = argv[++i];
     } else if (arg === "--aspect-ratio" || arg === "--aspect") {
       options.aspectRatio = argv[++i];
+    } else if (arg === "--resolution") {
+      options.resolution = argv[++i];
     } else if (arg === "--output-dir" || arg === "-o") {
       options.outputDir = argv[++i];
+    } else if (arg === "--no-save") {
+      options.save = false;
+    } else if (arg === "--no-wait") {
+      options.wait = false;
     } else if (arg?.startsWith("--")) {
       throw new Error(`Unknown option: ${arg}`);
     } else {
@@ -47,8 +55,13 @@ function printHelp() {
 
 Options:
   -p, --prompt          Image prompt. Positional prompt text is also accepted.
-      --aspect-ratio    auto, 1:1, 16:9, 9:16, 4:3, or 3:4. Default: 1:1
+      --aspect-ratio    auto, 1:1, 3:2, 2:3, 4:3, 3:4, 5:4, 4:5,
+                        16:9, 9:16, 2:1, 1:2, 3:1, 1:3, 21:9, or 9:21.
+                        Default: 1:1
+      --resolution      1K, 2K, or 4K. Default: 1K
   -o, --output-dir      Directory for generated image files. Default: outputs
+      --no-save         Return remote URLs or data URIs without writing files
+      --no-wait         Create the task and return the task id
   -h, --help            Show this help
 
 Environment:
@@ -63,28 +76,57 @@ async function main() {
     return;
   }
 
+  await warnOrRequireSkillUpdate();
+
   const config = resolveConfig();
-  const payload = buildChatPayload({
+  const payload = buildImagePayload({
     prompt: options.prompt,
     aspectRatio: options.aspectRatio,
+    resolution: options.resolution,
   });
 
-  const response = await callHiApi({ config, payload });
-  const imageOutputs = extractImageOutputs(response);
-  if (imageOutputs.length === 0) {
-    throw new Error("HiAPI response did not contain an extractable Markdown image.");
+  const created = await createImageTask(payload, { config });
+  const taskId = extractTaskId(created);
+  if (!taskId) {
+    throw new Error(`No image task id returned: ${JSON.stringify(created)}`);
   }
 
-  const savedOutputs = await saveImageOutputs(imageOutputs, {
-    outputDir: path.resolve(process.cwd(), options.outputDir),
-  });
+  if (options.wait === false) {
+    console.log(
+      JSON.stringify(
+        {
+          model: MODEL,
+          taskId,
+          status: "created",
+          aspectRatio: payload.input.aspect_ratio,
+          resolution: payload.input.resolution,
+          outputs: [],
+        },
+        null,
+        2,
+      ),
+    );
+    return;
+  }
+
+  const { response, outputs } = await waitForImage(taskId, { config });
+  const savedOutputs = options.save === false
+    ? outputs.map((output) => output.kind === "url"
+      ? { kind: "url", url: output.value }
+      : { kind: "data-uri", value: output.value, mimeType: output.mimeType })
+    : await saveImageOutputs(outputs, {
+      outputDir: path.resolve(process.cwd(), options.outputDir),
+    });
 
   console.log(
     JSON.stringify(
       {
         model: MODEL,
-        aspectRatio: payload.extra_body.google.image_config.aspect_ratio,
+        taskId,
+        aspectRatio: payload.input.aspect_ratio,
+        resolution: payload.input.resolution,
         outputs: savedOutputs,
+        rawStatus: response,
       },
       null,
       2,

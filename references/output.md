@@ -1,28 +1,43 @@
 # Output Handling
 
-HiAPI `gpt-image-2` returns image content through:
+HiAPI `gpt-image-2` image generation is asynchronous:
 
 ```text
-choices[0].message.content
+1. POST /v1/tasks creates an image task and returns data.taskId.
+2. GET /v1/tasks/{taskId} returns task status.
+3. When status is success, image assets are in data.output[].
 ```
 
-Common output:
+Common task output:
 
-```text
-![image](data:image/png;base64,...)
+```json
+{
+  "data": {
+    "taskId": "task_123",
+    "status": "success",
+    "output": [
+      {
+        "type": "image",
+        "url": "https://cdn.example.com/image.png"
+      }
+    ]
+  }
+}
 ```
 
-The CLI extracts all Markdown image targets from the assistant message:
+The CLI extracts image targets from `data.output[]`:
 
-- `data:image/...;base64,...` values are saved under `outputs/`.
 - `https://...` values are returned as URLs.
+- `data:image/...;base64,...` values are saved under `outputs/`.
 
 The CLI prints JSON:
 
 ```json
 {
   "model": "gpt-image-2",
+  "taskId": "task_123",
   "aspectRatio": "16:9",
+  "resolution": "1K",
   "outputs": [
     {
       "kind": "file",
@@ -32,7 +47,7 @@ The CLI prints JSON:
 }
 ```
 
-If no image can be extracted, treat the run as failed and show the returned content summary.
+If no image can be extracted after a successful task, treat the run as failed and show the returned task summary.
 
 ## User-Facing Failure Copy
 

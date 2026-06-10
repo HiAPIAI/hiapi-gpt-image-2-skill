@@ -1,6 +1,6 @@
 ---
 name: hiapi-gpt-image-2
-description: Generate images with HiAPI's gpt-image-2 model via the HiAPI OpenAI-compatible Chat Completions endpoint. Use when a user asks to create an image with GPT Image 2, HiAPI GPT Image 2, or this specific skill.
+description: Generate images with HiAPI's gpt-image-2 model via the HiAPI unified async task API. Use when a user asks to create an image with GPT Image 2, HiAPI GPT Image 2, or this specific skill.
 metadata:
   short-description: Generate GPT Image 2 images through HiAPI
 ---
@@ -35,10 +35,26 @@ Supported aspect ratios:
 
 - `auto`
 - `1:1`
+- `3:2`
+- `2:3`
 - `16:9`
 - `9:16`
 - `4:3`
 - `3:4`
+- `5:4`
+- `4:5`
+- `2:1`
+- `1:2`
+- `3:1`
+- `1:3`
+- `21:9`
+- `9:21`
+
+Supported resolutions:
+
+- `1K`
+- `2K`
+- `4K`
 
 The script writes generated data URI images to `outputs/` and prints JSON with the saved file paths or remote URLs.
 
@@ -47,7 +63,8 @@ The script writes generated data URI images to `outputs/` and prints JSON with t
 This skill calls:
 
 ```text
-POST /v1/chat/completions
+POST /v1/tasks
+GET /v1/tasks/{taskId}
 ```
 
 with:
@@ -55,20 +72,23 @@ with:
 ```json
 {
   "model": "gpt-image-2",
-  "stream": false,
-  "messages": [{ "role": "user", "content": "..." }],
-  "extra_body": {
-    "google": {
-      "image_config": { "aspect_ratio": "16:9" }
-    }
+  "input": {
+    "prompt": "...",
+    "aspect_ratio": "16:9",
+    "resolution": "1K"
   }
 }
 ```
 
-Expected image output is Markdown image content in `choices[0].message.content`, commonly:
+`POST /v1/tasks` returns `data.taskId`. Poll `GET /v1/tasks/{taskId}` until status is `success`. Expected image output is in `data.output[]`, commonly:
 
-```text
-![image](data:image/png;base64,...)
+```json
+{
+  "data": {
+    "status": "success",
+    "output": [{ "type": "image", "url": "https://cdn.example.com/image.png" }]
+  }
+}
 ```
 
 For details, read `references/api.md` and `references/output.md`.
@@ -90,4 +110,6 @@ Use `--live` only when you want to verify that the configured key can reach the 
 - HTTP `402`, insufficient balance, credits, quota, or payment errors: tell the user to add credits or check billing at https://www.hiapi.ai/en/dashboard and review pricing at https://www.hiapi.ai/en/pricing.
 - HTTP `429`: tell the user to wait and retry or reduce concurrent image generations.
 - Content policy or safety errors: ask the user to revise the prompt.
-- No extractable image: explain that this skill expects Markdown image content in `choices[0].message.content`.
+- No extractable image: explain that this skill expects `data.output[]` to contain an image URL or data URI after the task succeeds.
+- Optional skill update notice: tell the user the printed update command can be run later.
+- Required skill update notice: tell the user the printed update command must be run before using this skill again.

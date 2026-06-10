@@ -120,7 +120,8 @@ node scripts/check-config.mjs --live
 ### 功能
 
 - 文生图：描述你想要的画面，生成图片
-- 多种比例：`auto`、`1:1`、`16:9`、`9:16`、`4:3`、`3:4`
+- 多种比例：`auto`、`1:1`、`3:2`、`2:3`、`4:3`、`3:4`、`5:4`、`4:5`、`16:9`、`9:16`、`2:1`、`1:2`、`3:1`、`1:3`、`21:9`、`9:21`
+- 分辨率：`1K`、`2K`、`4K`
 - 本地输出：图片会保存到 `outputs/`
 - URL 输出：如果 HiAPI 返回图片 URL，Agent 会直接返回 URL
 - 错误提示：未配置 Key、Key 无效、余额不足、限流、内容安全拦截都有明确下一步
@@ -187,7 +188,11 @@ node scripts/hiapi-gpt-image-2.mjs \
 | `402 Payment Required` / 余额不足 | 进入 [HiAPI Dashboard](https://www.hiapi.ai/zh/dashboard) 检查账号状态。 |
 | `429 Too Many Requests` | 稍后重试，或减少并发生成请求。 |
 | 内容被拦截 | 提示词触发了内容安全策略，请修改描述。 |
-| 没有图片输出 | 检查接口返回内容；该 skill 期望 `choices[0].message.content` 中包含图片。 |
+| 没有图片输出 | 检查任务返回内容；该 skill 期望任务成功后在 `data.output[]` 中返回图片 URL 或 data URI。 |
+| 有可选更新 | CLI 启动时会检查 HiAPI skills 索引。如果只是建议升级，会打印升级命令并继续执行。 |
+| 必须更新 | CLI 会停止并打印必须执行的升级命令。运行 `npx -y github:HiAPIAI/hiapi-gpt-image-2-skill -y` 后重启 Agent。 |
+
+只有在离线或内网环境无法访问 skills 索引时，才建议设置 `HIAPI_SKIP_UPDATE_CHECK=1` 跳过检查。
 
 ---
 
