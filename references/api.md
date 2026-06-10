@@ -2,7 +2,7 @@
 
 ## Endpoint
 
-`gpt-image-2` uses HiAPI's unified async task API:
+The GPT Image 2 family uses HiAPI's unified async task API:
 
 ```text
 POST https://api.hiapi.ai/v1/tasks
@@ -48,13 +48,28 @@ https://www.hiapi.ai/en/pricing
 }
 ```
 
+Image-to-image:
+
+```json
+{
+  "model": "gpt-image-2-image-to-image-pro",
+  "input": {
+    "prompt": "Restyle this product photo as a premium studio ad",
+    "input_urls": ["https://example.com/product.jpg"],
+    "aspect_ratio": "auto",
+    "resolution": "2K"
+  }
+}
+```
+
 ## Parameters
 
 | Parameter | Required | Notes |
 | --- | --- | --- |
-| `model` | yes | Must be `gpt-image-2`. |
+| `model` | yes | `gpt-image-2`, `gpt-image-2-pro`, `gpt-image-2-image-to-image`, or `gpt-image-2-image-to-image-pro`. |
 | `input.prompt` | yes | Text image instruction. |
+| `input.input_urls` | image-to-image only | Required for `gpt-image-2-image-to-image` and `gpt-image-2-image-to-image-pro`; pass 1-5 public image URLs. Do not send it for text-to-image models. |
 | `input.aspect_ratio` | no | `auto`, `1:1`, `3:2`, `2:3`, `4:3`, `3:4`, `5:4`, `4:5`, `16:9`, `9:16`, `2:1`, `1:2`, `3:1`, `1:3`, `21:9`, or `9:21`. Defaults to `1:1`. |
 | `input.resolution` | no | `1K`, `2K`, or `4K`. Defaults to `1K`. |
 
-This text-to-image skill does not send reference images. Use a GPT Image 2 image-to-image model or another image-editing skill when the user provides source images.
+Text-to-image models do not accept `input_urls`. Image-to-image models require `input_urls`, and the CLI validates the 1-5 image limit before sending the task.

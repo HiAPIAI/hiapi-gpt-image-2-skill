@@ -3,10 +3,10 @@ import path from "node:path";
 
 export const MODEL = "gpt-image-2";
 export const SKILL_ID = "hiapi-gpt-image-2";
-export const SKILL_VERSION = "0.1.1";
+export const SKILL_VERSION = "0.1.3";
 export const DEFAULT_BASE_URL = "https://api.hiapi.ai";
 export const DEFAULT_SKILLS_MANIFEST_URL = "https://raw.githubusercontent.com/HiAPIAI/hiapi-skills/main/skills.json";
-export const DEFAULT_ASPECT_RATIO = "1:1";
+export const DEFAULT_ASPECT_RATIO = "auto";
 export const DEFAULT_RESOLUTION = "1K";
 export const DEFAULT_OUTPUT_DIR = "outputs";
 export const POLL_INTERVAL_MS = 3000;
@@ -34,44 +34,97 @@ export const SUPPORTED_ASPECT_RATIOS = new Set([
   "9:21",
 ]);
 export const SUPPORTED_RESOLUTIONS = new Set(["1K", "2K", "4K"]);
+export const SUPPORTED_MODELS = new Set([
+  "gpt-image-2",
+  "gpt-image-2-pro",
+  "gpt-image-2-image-to-image",
+  "gpt-image-2-image-to-image-pro",
+]);
+export const IMAGE_TO_IMAGE_MODELS = new Set([
+  "gpt-image-2-image-to-image",
+  "gpt-image-2-image-to-image-pro",
+]);
+const GPT_PRO_ASPECT_RATIOS = new Set(["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"]);
+const GPT_IMAGE_TO_IMAGE_PRO_ASPECT_RATIOS = new Set(["auto", ...GPT_PRO_ASPECT_RATIOS]);
 
-export function normalizeAspectRatio(value = DEFAULT_ASPECT_RATIO) {
+export function normalizeModel(value = MODEL) {
+  const model = String(value || MODEL).trim();
+  if (!SUPPORTED_MODELS.has(model)) {
+    throw new Error(`Unsupported model "${model}". Supported values: ${Array.from(SUPPORTED_MODELS).join(", ")}`);
+  }
+  return model;
+}
+
+export function normalizeAspectRatio(value = DEFAULT_ASPECT_RATIO, model = MODEL) {
   const normalized = String(value || DEFAULT_ASPECT_RATIO).trim();
-  if (!SUPPORTED_ASPECT_RATIOS.has(normalized)) {
+  const normalizedModel = normalizeModel(model);
+  const supported = normalizedModel === "gpt-image-2-pro"
+    ? GPT_PRO_ASPECT_RATIOS
+    : normalizedModel === "gpt-image-2-image-to-image-pro"
+      ? GPT_IMAGE_TO_IMAGE_PRO_ASPECT_RATIOS
+      : SUPPORTED_ASPECT_RATIOS;
+  if (!supported.has(normalized)) {
     throw new Error(
-      `Unsupported aspect ratio "${normalized}". Supported values: ${Array.from(SUPPORTED_ASPECT_RATIOS).join(", ")}`,
+      `Unsupported aspect ratio "${normalized}" for ${normalizedModel}. Supported values: ${Array.from(supported).join(", ")}`,
     );
   }
   return normalized;
 }
 
-export function normalizeResolution(value = DEFAULT_RESOLUTION) {
+export function normalizeResolution(value = DEFAULT_RESOLUTION, model = MODEL) {
   const resolution = String(value || DEFAULT_RESOLUTION).trim().toUpperCase();
-  if (!SUPPORTED_RESOLUTIONS.has(resolution)) {
+  const normalizedModel = normalizeModel(model);
+  const supported = normalizedModel === "gpt-image-2" || normalizedModel === "gpt-image-2-image-to-image"
+    ? SUPPORTED_RESOLUTIONS
+    : new Set(["1K", "2K"]);
+  if (!supported.has(resolution)) {
     throw new Error(
-      `Unsupported resolution "${resolution}". Supported values: ${Array.from(SUPPORTED_RESOLUTIONS).join(", ")}`,
+      `Unsupported resolution "${resolution}" for ${normalizedModel}. Supported values: ${Array.from(supported).join(", ")}`,
     );
   }
   return resolution;
 }
 
+export function normalizeInputUrls(value) {
+  if (value === undefined || value === null || value === "") return [];
+  const raw = Array.isArray(value) ? value : [value];
+  return raw
+    .flatMap((entry) => String(entry).split(","))
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
 export function buildImagePayload({
+  model = MODEL,
   prompt,
   aspectRatio = DEFAULT_ASPECT_RATIO,
   resolution = DEFAULT_RESOLUTION,
+  inputUrls,
 } = {}) {
+  const normalizedModel = normalizeModel(model);
   const normalizedPrompt = String(prompt || "").trim();
   if (!normalizedPrompt) {
     throw new Error("A non-empty prompt is required.");
   }
 
+  const normalizedInputUrls = normalizeInputUrls(inputUrls);
+  if (IMAGE_TO_IMAGE_MODELS.has(normalizedModel) && (normalizedInputUrls.length < 1 || normalizedInputUrls.length > 5)) {
+    throw new Error(`${normalizedModel} requires 1-5 input image URLs via input_urls.`);
+  }
+  if (!IMAGE_TO_IMAGE_MODELS.has(normalizedModel) && normalizedInputUrls.length > 0) {
+    throw new Error(`${normalizedModel} does not accept input_urls. Use gpt-image-2-image-to-image or gpt-image-2-image-to-image-pro.`);
+  }
+
+  const input = {
+    prompt: normalizedPrompt,
+    ...(normalizedInputUrls.length > 0 ? { input_urls: normalizedInputUrls } : {}),
+    aspect_ratio: normalizeAspectRatio(aspectRatio, normalizedModel),
+    resolution: normalizeResolution(resolution, normalizedModel),
+  };
+
   return {
-    model: MODEL,
-    input: {
-      prompt: normalizedPrompt,
-      aspect_ratio: normalizeAspectRatio(aspectRatio),
-      resolution: normalizeResolution(resolution),
-    },
+    model: normalizedModel,
+    input,
   };
 }
 
@@ -139,6 +192,37 @@ export function getTaskStatus(response) {
   return String(status).toLowerCase();
 }
 
+export function extractTaskFailureSummary(response) {
+  const candidates = [
+    response?.data?.error,
+    response?.data?.fail_reason,
+    response?.data?.failReason,
+    response?.data?.error_message,
+    response?.data?.errorMessage,
+    response?.data?.task_status_msg,
+    response?.data?.taskStatusMsg,
+    response?.data?.output?.error,
+    response?.data?.output?.fail_reason,
+    response?.data?.output?.error_message,
+    response?.data?.output?.task_status_msg,
+    response?.error,
+    response?.fail_reason,
+    response?.error_message,
+    response?.task_status_msg,
+    response?.message,
+  ];
+
+  for (const candidate of candidates) {
+    const summary = summarizeErrorBody(candidate);
+    if (isUsefulFailureSummary(summary)) return summary;
+  }
+
+  const taskId = extractTaskId(response);
+  return taskId
+    ? `task failed without a public failure reason. Task ID: ${taskId}`
+    : "task failed without a public failure reason.";
+}
+
 export async function createImageTask(payload, { config = resolveConfig(), fetchImpl = fetch } = {}) {
   return requestJson(`${config.baseUrl}/v1/tasks`, {
     method: "POST",
@@ -176,7 +260,7 @@ export async function waitForImage(taskId, { config = resolveConfig(), fetchImpl
     }
 
     if (status === "fail" || status === "failed") {
-      throw new Error(`Image generation failed: ${summarizeErrorBody(response.error || response.message || response)}`);
+      throw new Error(`Image generation failed: ${extractTaskFailureSummary(response)}`);
     }
   }
 
@@ -193,7 +277,7 @@ export async function generateImage(options, config = resolveConfig()) {
 
   if (options.wait === false) {
     return {
-      model: MODEL,
+      model: payload.model,
       taskId,
       status: "created",
       aspectRatio: payload.input.aspect_ratio,
@@ -216,7 +300,7 @@ export async function generateImage(options, config = resolveConfig()) {
     });
 
   return {
-    model: MODEL,
+    model: payload.model,
     taskId,
     aspectRatio: payload.input.aspect_ratio,
     resolution: payload.input.resolution,
@@ -348,10 +432,20 @@ export function compareVersions(left, right) {
 }
 
 export function summarizeErrorBody(body) {
+  if (!body) return "Unknown error";
+  if (typeof body === "string") return body.slice(0, 500);
+  if (body?.code && body?.message && body.message !== "success") {
+    return `${body.code}: ${body.message}`.slice(0, 500);
+  }
   if (body?.error?.message) return String(body.error.message).slice(0, 500);
   if (body?.message) return String(body.message).slice(0, 500);
   if (body?.raw) return String(body.raw).slice(0, 500);
   return JSON.stringify(body).slice(0, 500);
+}
+
+function isUsefulFailureSummary(summary) {
+  const normalized = String(summary || "").trim().toLowerCase();
+  return normalized !== "" && normalized !== "unknown error" && normalized !== "success" && normalized !== "ok";
 }
 
 export function buildHttpErrorMessage(status, body) {

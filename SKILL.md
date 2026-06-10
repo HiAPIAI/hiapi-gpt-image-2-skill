@@ -1,13 +1,13 @@
 ---
 name: hiapi-gpt-image-2
-description: Generate images with HiAPI's gpt-image-2 model via the HiAPI unified async task API. Use when a user asks to create an image with GPT Image 2, HiAPI GPT Image 2, or this specific skill.
+description: Generate images with HiAPI's GPT Image 2 family via the HiAPI unified async task API. Use when a user asks to create or edit an image with GPT Image 2, HiAPI GPT Image 2, or this specific skill.
 metadata:
   short-description: Generate GPT Image 2 images through HiAPI
 ---
 
 # HiAPI GPT Image 2
 
-Use this skill when the user wants image generation through HiAPI's `gpt-image-2` model.
+Use this skill when the user wants image generation through the HiAPI GPT Image 2 family.
 
 ## Requirements
 
@@ -30,6 +30,15 @@ Run:
 ```bash
 node scripts/hiapi-gpt-image-2.mjs --prompt "Create a launch poster for an AI note app" --aspect-ratio 16:9
 ```
+
+Supported models:
+
+- `gpt-image-2`
+- `gpt-image-2-pro`
+- `gpt-image-2-image-to-image`
+- `gpt-image-2-image-to-image-pro`
+
+For image-to-image requests, use one of the image-to-image models and pass `--input-url` once per reference image. The API field is `input.input_urls`; supported count is 1 to 5 images.
 
 Supported aspect ratios:
 
@@ -76,6 +85,20 @@ with:
     "prompt": "...",
     "aspect_ratio": "16:9",
     "resolution": "1K"
+  }
+}
+```
+
+Image-to-image:
+
+```json
+{
+  "model": "gpt-image-2-image-to-image-pro",
+  "input": {
+    "prompt": "...",
+    "input_urls": ["https://example.com/source.png"],
+    "aspect_ratio": "auto",
+    "resolution": "2K"
   }
 }
 ```
