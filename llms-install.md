@@ -13,7 +13,7 @@ Important links:
 
 ## Purpose
 
-Install `hiapi-gpt-image-2`, a single-model image generation skill for HiAPI `gpt-image-2`.
+Install `hiapi-gpt-image-2`, an image generation skill for the HiAPI GPT Image 2 family.
 
 ## Requirements
 
@@ -60,6 +60,19 @@ node scripts/hiapi-gpt-image-2.mjs \
   --prompt "Create a 16:9 launch poster for an AI writing app" \
   --aspect-ratio 16:9
 ```
+
+Image-to-image:
+
+```bash
+node scripts/hiapi-gpt-image-2.mjs \
+  --model gpt-image-2-image-to-image-pro \
+  --prompt "Restyle this product photo as a premium studio ad" \
+  --input-url "https://example.com/product.jpg" \
+  --aspect-ratio auto \
+  --resolution 2K
+```
+
+Supported models are `gpt-image-2`, `gpt-image-2-pro`, `gpt-image-2-image-to-image`, and `gpt-image-2-image-to-image-pro`. Image-to-image models require 1-5 `--input-url` values; text-to-image models must not receive input URLs.
 
 ## Prompt Recipe Source
 

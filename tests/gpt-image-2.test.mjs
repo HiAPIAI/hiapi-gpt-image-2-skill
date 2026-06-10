@@ -7,8 +7,10 @@ import {
   checkSkillUpdate,
   compareVersions,
   createImageTask,
+  extractTaskFailureSummary,
   extractTaskId,
   extractImageOutputs,
+  normalizeModel,
   normalizeAspectRatio,
   resolveConfig,
 } from "../scripts/lib/gpt-image-2.mjs";
@@ -28,6 +30,50 @@ test("builds the HiAPI task payload for gpt-image-2", () => {
       resolution: "1K",
     },
   });
+});
+
+test("builds GPT Image 2 image-to-image task payloads with input_urls", () => {
+  const payload = buildImagePayload({
+    model: "gpt-image-2-image-to-image-pro",
+    prompt: "Restyle this product photo as a premium catalog image",
+    inputUrls: ["https://example.com/reference-1.png", "https://example.com/reference-2.png"],
+    aspectRatio: "auto",
+    resolution: "2K",
+  });
+
+  assert.deepEqual(payload, {
+    model: "gpt-image-2-image-to-image-pro",
+    input: {
+      prompt: "Restyle this product photo as a premium catalog image",
+      input_urls: ["https://example.com/reference-1.png", "https://example.com/reference-2.png"],
+      aspect_ratio: "auto",
+      resolution: "2K",
+    },
+  });
+});
+
+test("validates GPT Image 2 model variants and image-to-image inputs", () => {
+  assert.equal(normalizeModel("gpt-image-2"), "gpt-image-2");
+  assert.equal(normalizeModel("gpt-image-2-pro"), "gpt-image-2-pro");
+  assert.equal(normalizeModel("gpt-image-2-image-to-image"), "gpt-image-2-image-to-image");
+  assert.equal(normalizeModel("gpt-image-2-image-to-image-pro"), "gpt-image-2-image-to-image-pro");
+  assert.throws(() => normalizeModel("gpt-image-2-beta"), /Unsupported model/);
+  assert.throws(
+    () => buildImagePayload({
+      model: "gpt-image-2-image-to-image",
+      prompt: "Restyle this",
+      inputUrls: [],
+    }),
+    /requires 1-5 input image URLs/,
+  );
+  assert.throws(
+    () => buildImagePayload({
+      model: "gpt-image-2-image-to-image-pro",
+      prompt: "Restyle this",
+      inputUrls: Array.from({ length: 6 }, (_, index) => `https://example.com/${index}.png`),
+    }),
+    /requires 1-5 input image URLs/,
+  );
 });
 
 test("accepts the current GPT Image 2 aspect ratio set", () => {
@@ -53,6 +99,24 @@ test("extracts task ids and image outputs from task responses", () => {
       { kind: "url", value: "https://cdn.example.com/out.png" },
       { kind: "data-uri", mimeType: "image/png", value: "data:image/png;base64,AAA" },
     ],
+  );
+});
+
+test("extracts task failure reason from failed task detail instead of outer success message", () => {
+  assert.equal(
+    extractTaskFailureSummary({
+      code: 200,
+      message: "success",
+      data: {
+        status: "fail",
+        taskId: "tk-hiapi-failed",
+        error: {
+          code: "TASK_FAILED",
+          message: "task failed",
+        },
+      },
+    }),
+    "TASK_FAILED: task failed",
   );
 });
 

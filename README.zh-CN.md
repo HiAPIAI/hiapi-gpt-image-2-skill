@@ -24,7 +24,7 @@ HiAPI 是为开发者打造的 AI API 平台：一个 API，所有 AI 模型。�
 
 | 技能 | 描述 | 模型 |
 | --- | --- | --- |
-| HiAPI GPT Image 2 | 文生图 | GPT Image 2 |
+| HiAPI GPT Image 2 | 文生图、图生图 | GPT Image 2 系列 |
 
 ---
 
@@ -115,11 +115,13 @@ node scripts/check-config.mjs --live
 
 ## GPT Image 2 图像生成
 
-通过自然语言让你的 AI Agent 生成图片。
+通过自然语言让你的 AI Agent 生成图片，也可以给图生图模型传参考图 URL。
 
 ### 功能
 
 - 文生图：描述你想要的画面，生成图片
+- 图生图：使用 `gpt-image-2-image-to-image` 或 `gpt-image-2-image-to-image-pro`，通过 `--input-url` 传参考图片
+- 模型变体：`gpt-image-2`、`gpt-image-2-pro`、`gpt-image-2-image-to-image`、`gpt-image-2-image-to-image-pro`
 - 多种比例：`auto`、`1:1`、`3:2`、`2:3`、`4:3`、`3:4`、`5:4`、`4:5`、`16:9`、`9:16`、`2:1`、`1:2`、`3:1`、`1:3`、`21:9`、`9:21`
 - 分辨率：`1K`、`2K`、`4K`
 - 本地输出：图片会保存到 `outputs/`
@@ -142,6 +144,17 @@ node scripts/check-config.mjs --live
 node scripts/hiapi-gpt-image-2.mjs \
   --prompt "Create a cinematic mountain lake photo at sunset" \
   --aspect-ratio 16:9
+```
+
+图生图：
+
+```bash
+node scripts/hiapi-gpt-image-2.mjs \
+  --model gpt-image-2-image-to-image-pro \
+  --prompt "把这张产品图改成干净高级的棚拍广告图" \
+  --input-url "https://example.com/product.jpg" \
+  --aspect-ratio auto \
+  --resolution 2K
 ```
 
 自定义输出目录：
