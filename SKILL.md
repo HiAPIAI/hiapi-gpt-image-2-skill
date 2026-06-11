@@ -65,6 +65,13 @@ Supported resolutions:
 - `2K`
 - `4K`
 
+Pro models (`gpt-image-2-pro`, `gpt-image-2-image-to-image-pro`) only support `1K` and `2K`, and a narrower aspect ratio set (no `2:1`, `1:2`, `3:1`, `1:3`, `9:21`; plain pro also has no `auto`).
+
+Cross-field constraints for `gpt-image-2` and `gpt-image-2-image-to-image`:
+
+- `aspect_ratio=auto` (or omitted) only supports `resolution=1K`.
+- `aspect_ratio=1:1` cannot be combined with `resolution=4K`.
+
 The script writes generated data URI images to `outputs/` and prints JSON with the saved file paths or remote URLs.
 
 ## API Contract

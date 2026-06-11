@@ -3,7 +3,7 @@ import path from "node:path";
 
 export const MODEL = "gpt-image-2";
 export const SKILL_ID = "hiapi-gpt-image-2";
-export const SKILL_VERSION = "0.1.3";
+export const SKILL_VERSION = "0.1.4";
 export const DEFAULT_BASE_URL = "https://api.hiapi.ai";
 export const DEFAULT_SKILLS_MANIFEST_URL = "https://raw.githubusercontent.com/HiAPIAI/hiapi-skills/main/skills.json";
 export const DEFAULT_ASPECT_RATIO = "auto";
@@ -115,11 +115,28 @@ export function buildImagePayload({
     throw new Error(`${normalizedModel} does not accept input_urls. Use gpt-image-2-image-to-image or gpt-image-2-image-to-image-pro.`);
   }
 
+  const normalizedAspectRatio = normalizeAspectRatio(aspectRatio, normalizedModel);
+  const normalizedResolution = normalizeResolution(resolution, normalizedModel);
+
+  // Cross-field constraints documented for gpt-image-2 and gpt-image-2-image-to-image.
+  if (normalizedModel === "gpt-image-2" || normalizedModel === "gpt-image-2-image-to-image") {
+    if (normalizedAspectRatio === "auto" && normalizedResolution !== "1K") {
+      throw new Error(
+        `aspect_ratio "auto" only supports resolution "1K" for ${normalizedModel}. Use --resolution 1K, or pick an explicit aspect ratio for ${normalizedResolution}.`,
+      );
+    }
+    if (normalizedAspectRatio === "1:1" && normalizedResolution === "4K") {
+      throw new Error(
+        `aspect_ratio "1:1" cannot be combined with resolution "4K" for ${normalizedModel}. Use 1K or 2K, or pick a non-square aspect ratio for 4K.`,
+      );
+    }
+  }
+
   const input = {
     prompt: normalizedPrompt,
     ...(normalizedInputUrls.length > 0 ? { input_urls: normalizedInputUrls } : {}),
-    aspect_ratio: normalizeAspectRatio(aspectRatio, normalizedModel),
-    resolution: normalizeResolution(resolution, normalizedModel),
+    aspect_ratio: normalizedAspectRatio,
+    resolution: normalizedResolution,
   };
 
   return {
