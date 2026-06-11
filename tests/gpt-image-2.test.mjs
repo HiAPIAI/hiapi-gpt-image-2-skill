@@ -263,3 +263,40 @@ test("reports soft and required skill updates from the manifest", async () => {
   assert.equal(available.status, "available");
   assert.match(available.message, /New version available/);
 });
+
+test("enforces documented cross-field constraints for non-pro models", () => {
+  assert.throws(
+    () => buildImagePayload({ prompt: "p", aspectRatio: "auto", resolution: "2K" }),
+    /aspect_ratio "auto" only supports resolution "1K"/,
+  );
+  assert.throws(
+    () => buildImagePayload({ prompt: "p", aspectRatio: "1:1", resolution: "4K" }),
+    /cannot be combined with resolution "4K"/,
+  );
+  assert.throws(
+    () => buildImagePayload({
+      model: "gpt-image-2-image-to-image",
+      prompt: "p",
+      inputUrls: ["https://example.com/a.png"],
+      aspectRatio: "auto",
+      resolution: "4K",
+    }),
+    /aspect_ratio "auto" only supports resolution "1K"/,
+  );
+
+  // Allowed combinations still pass.
+  assert.equal(buildImagePayload({ prompt: "p", aspectRatio: "auto", resolution: "1K" }).input.resolution, "1K");
+  assert.equal(buildImagePayload({ prompt: "p", aspectRatio: "1:1", resolution: "2K" }).input.resolution, "2K");
+  assert.equal(buildImagePayload({ prompt: "p", aspectRatio: "16:9", resolution: "4K" }).input.resolution, "4K");
+  // Pro models are not subject to the auto/4K rules (auto+2K is a documented pro i2i combo).
+  assert.equal(
+    buildImagePayload({
+      model: "gpt-image-2-image-to-image-pro",
+      prompt: "p",
+      inputUrls: ["https://example.com/a.png"],
+      aspectRatio: "auto",
+      resolution: "2K",
+    }).input.resolution,
+    "2K",
+  );
+});
