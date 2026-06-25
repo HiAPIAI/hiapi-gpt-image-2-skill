@@ -120,8 +120,8 @@ Ask your AI Agent to generate images with natural language, or provide reference
 ### Features
 
 - Text-to-image: describe the image you want and generate it
-- Image-to-image: use `gpt-image-2-image-to-image` or `gpt-image-2-image-to-image-pro` with `--input-url` values
-- Model variants: `gpt-image-2`, `gpt-image-2-pro`, `gpt-image-2-image-to-image`, `gpt-image-2-image-to-image-pro`
+- Image-to-image: use `gpt-image-2/image-to-image` with `--input-url` values
+- Model variants: `gpt-image-2/text-to-image`, `gpt-image-2/image-to-image`
 - Aspect ratios: `auto`, `1:1`, `3:2`, `2:3`, `4:3`, `3:4`, `5:4`, `4:5`, `16:9`, `9:16`, `2:1`, `1:2`, `3:1`, `1:3`, `21:9`, `9:21`
 - Resolutions: `1K`, `2K`, `4K`
 - Local output: images are saved to `outputs/`
@@ -150,10 +150,10 @@ Image-to-image:
 
 ```bash
 node scripts/hiapi-gpt-image-2.mjs \
-  --model gpt-image-2-image-to-image-pro \
+  --model gpt-image-2/image-to-image \
   --prompt "Turn this product photo into a clean premium studio ad" \
   --input-url "https://example.com/product.jpg" \
-  --aspect-ratio auto \
+  --aspect-ratio 16:9 \
   --resolution 2K
 ```
 

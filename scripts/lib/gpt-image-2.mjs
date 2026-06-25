@@ -1,9 +1,19 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-export const MODEL = "gpt-image-2";
+export const MODEL = "gpt-image-2/text-to-image";
 export const SKILL_ID = "hiapi-gpt-image-2";
-export const SKILL_VERSION = "0.1.4";
+export const SKILL_VERSION = "0.2.0";
+// 老名 → 新名向后兼容映射：现存用户脚本传老名（gpt-image-2 / gpt-image-2-image-to-image）也能用，
+// normalizeModel 入口先归一。退役的 Pro 不在表中 → 传入会落到 throw（提示改用基础版新名）。
+export const MODEL_ALIASES = new Map([
+  ["gpt-image-2", "gpt-image-2/text-to-image"],
+  ["gpt-image-2-image-to-image", "gpt-image-2/image-to-image"],
+  ["gpt-image-2/text-to-image", "gpt-image-2/text-to-image"],
+  ["gpt-image-2/image-to-image", "gpt-image-2/image-to-image"],
+]);
+// 文件名安全 slug：新名含 "/"，不能直接拼进本地文件名（会被当路径分隔符导致写入失败）。
+export const modelFileSlug = (m) => String(m).replace(/[/@]/g, "-");
 export const DEFAULT_BASE_URL = "https://api.hiapi.ai";
 export const DEFAULT_SKILLS_MANIFEST_URL = "https://raw.githubusercontent.com/HiAPIAI/hiapi-skills/main/skills.json";
 export const DEFAULT_ASPECT_RATIO = "auto";
@@ -35,37 +45,30 @@ export const SUPPORTED_ASPECT_RATIOS = new Set([
 ]);
 export const SUPPORTED_RESOLUTIONS = new Set(["1K", "2K", "4K"]);
 export const SUPPORTED_MODELS = new Set([
-  "gpt-image-2",
-  "gpt-image-2-pro",
-  "gpt-image-2-image-to-image",
-  "gpt-image-2-image-to-image-pro",
+  "gpt-image-2/text-to-image",
+  "gpt-image-2/image-to-image",
 ]);
 export const IMAGE_TO_IMAGE_MODELS = new Set([
-  "gpt-image-2-image-to-image",
-  "gpt-image-2-image-to-image-pro",
+  "gpt-image-2/image-to-image",
 ]);
-const GPT_PRO_ASPECT_RATIOS = new Set(["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"]);
-const GPT_IMAGE_TO_IMAGE_PRO_ASPECT_RATIOS = new Set(["auto", ...GPT_PRO_ASPECT_RATIOS]);
 
 export function normalizeModel(value = MODEL) {
-  const model = String(value || MODEL).trim();
-  if (!SUPPORTED_MODELS.has(model)) {
-    throw new Error(`Unsupported model "${model}". Supported values: ${Array.from(SUPPORTED_MODELS).join(", ")}`);
-  }
-  return model;
+  const raw = String(value || MODEL).trim();
+  const mapped = MODEL_ALIASES.get(raw); // 老名先归一到新名（向后兼容）
+  if (mapped) return mapped;
+  if (SUPPORTED_MODELS.has(raw)) return raw;
+  throw new Error(
+    `Unsupported model "${raw}". The Pro variants (gpt-image-2-pro / gpt-image-2-image-to-image-pro) ` +
+      `have been retired — use ${Array.from(SUPPORTED_MODELS).join(" or ")}.`,
+  );
 }
 
 export function normalizeAspectRatio(value = DEFAULT_ASPECT_RATIO, model = MODEL) {
   const normalized = String(value || DEFAULT_ASPECT_RATIO).trim();
   const normalizedModel = normalizeModel(model);
-  const supported = normalizedModel === "gpt-image-2-pro"
-    ? GPT_PRO_ASPECT_RATIOS
-    : normalizedModel === "gpt-image-2-image-to-image-pro"
-      ? GPT_IMAGE_TO_IMAGE_PRO_ASPECT_RATIOS
-      : SUPPORTED_ASPECT_RATIOS;
-  if (!supported.has(normalized)) {
+  if (!SUPPORTED_ASPECT_RATIOS.has(normalized)) {
     throw new Error(
-      `Unsupported aspect ratio "${normalized}" for ${normalizedModel}. Supported values: ${Array.from(supported).join(", ")}`,
+      `Unsupported aspect ratio "${normalized}" for ${normalizedModel}. Supported values: ${Array.from(SUPPORTED_ASPECT_RATIOS).join(", ")}`,
     );
   }
   return normalized;
@@ -74,12 +77,9 @@ export function normalizeAspectRatio(value = DEFAULT_ASPECT_RATIO, model = MODEL
 export function normalizeResolution(value = DEFAULT_RESOLUTION, model = MODEL) {
   const resolution = String(value || DEFAULT_RESOLUTION).trim().toUpperCase();
   const normalizedModel = normalizeModel(model);
-  const supported = normalizedModel === "gpt-image-2" || normalizedModel === "gpt-image-2-image-to-image"
-    ? SUPPORTED_RESOLUTIONS
-    : new Set(["1K", "2K"]);
-  if (!supported.has(resolution)) {
+  if (!SUPPORTED_RESOLUTIONS.has(resolution)) {
     throw new Error(
-      `Unsupported resolution "${resolution}" for ${normalizedModel}. Supported values: ${Array.from(supported).join(", ")}`,
+      `Unsupported resolution "${resolution}" for ${normalizedModel}. Supported values: ${Array.from(SUPPORTED_RESOLUTIONS).join(", ")}`,
     );
   }
   return resolution;
@@ -112,14 +112,14 @@ export function buildImagePayload({
     throw new Error(`${normalizedModel} requires 1-5 input image URLs via input_urls.`);
   }
   if (!IMAGE_TO_IMAGE_MODELS.has(normalizedModel) && normalizedInputUrls.length > 0) {
-    throw new Error(`${normalizedModel} does not accept input_urls. Use gpt-image-2-image-to-image or gpt-image-2-image-to-image-pro.`);
+    throw new Error(`${normalizedModel} does not accept input_urls. Use gpt-image-2/image-to-image.`);
   }
 
   const normalizedAspectRatio = normalizeAspectRatio(aspectRatio, normalizedModel);
   const normalizedResolution = normalizeResolution(resolution, normalizedModel);
 
   // Cross-field constraints documented for gpt-image-2 and gpt-image-2-image-to-image.
-  if (normalizedModel === "gpt-image-2" || normalizedModel === "gpt-image-2-image-to-image") {
+  if (normalizedModel === "gpt-image-2/text-to-image" || normalizedModel === "gpt-image-2/image-to-image") {
     if (normalizedAspectRatio === "auto" && normalizedResolution !== "1K") {
       throw new Error(
         `aspect_ratio "auto" only supports resolution "1K" for ${normalizedModel}. Use --resolution 1K, or pick an explicit aspect ratio for ${normalizedResolution}.`,
@@ -548,7 +548,7 @@ export async function saveImageOutputs(outputs, { outputDir, now = new Date() })
     }
 
     const extension = extensionForMimeType(output.mimeType);
-    const fileName = `${MODEL}-${formatTimestamp(now)}-${index}${extension}`;
+    const fileName = `${modelFileSlug(MODEL)}-${formatTimestamp(now)}-${index}${extension}`;
     const filePath = path.resolve(outputDir, fileName);
     const base64 = output.value.replace(/^data:[^;]+;base64,/, "");
     await writeFile(filePath, Buffer.from(base64, "base64"));
