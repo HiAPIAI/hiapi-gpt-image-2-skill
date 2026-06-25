@@ -65,14 +65,14 @@ Image-to-image:
 
 ```bash
 node scripts/hiapi-gpt-image-2.mjs \
-  --model gpt-image-2-image-to-image-pro \
+  --model gpt-image-2/image-to-image \
   --prompt "Restyle this product photo as a premium studio ad" \
   --input-url "https://example.com/product.jpg" \
-  --aspect-ratio auto \
+  --aspect-ratio 16:9 \
   --resolution 2K
 ```
 
-Supported models are `gpt-image-2`, `gpt-image-2-pro`, `gpt-image-2-image-to-image`, and `gpt-image-2-image-to-image-pro`. Image-to-image models require 1-5 `--input-url` values; text-to-image models must not receive input URLs.
+Supported models are `gpt-image-2/text-to-image` and `gpt-image-2/image-to-image`. The image-to-image model requires 1-5 `--input-url` values; the text-to-image model must not receive input URLs.
 
 ## Prompt Recipe Source
 

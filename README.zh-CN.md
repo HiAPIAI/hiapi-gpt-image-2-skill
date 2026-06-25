@@ -120,8 +120,8 @@ node scripts/check-config.mjs --live
 ### 功能
 
 - 文生图：描述你想要的画面，生成图片
-- 图生图：使用 `gpt-image-2-image-to-image` 或 `gpt-image-2-image-to-image-pro`，通过 `--input-url` 传参考图片
-- 模型变体：`gpt-image-2`、`gpt-image-2-pro`、`gpt-image-2-image-to-image`、`gpt-image-2-image-to-image-pro`
+- 图生图：使用 `gpt-image-2/image-to-image`，通过 `--input-url` 传参考图片
+- 模型变体：`gpt-image-2/text-to-image`、`gpt-image-2/image-to-image`
 - 多种比例：`auto`、`1:1`、`3:2`、`2:3`、`4:3`、`3:4`、`5:4`、`4:5`、`16:9`、`9:16`、`2:1`、`1:2`、`3:1`、`1:3`、`21:9`、`9:21`
 - 分辨率：`1K`、`2K`、`4K`
 - 本地输出：图片会保存到 `outputs/`
@@ -150,10 +150,10 @@ node scripts/hiapi-gpt-image-2.mjs \
 
 ```bash
 node scripts/hiapi-gpt-image-2.mjs \
-  --model gpt-image-2-image-to-image-pro \
+  --model gpt-image-2/image-to-image \
   --prompt "把这张产品图改成干净高级的棚拍广告图" \
   --input-url "https://example.com/product.jpg" \
-  --aspect-ratio auto \
+  --aspect-ratio 16:9 \
   --resolution 2K
 ```
 

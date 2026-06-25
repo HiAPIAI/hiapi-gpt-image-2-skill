@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdtemp, readdir, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 
 import {
@@ -10,12 +13,14 @@ import {
   extractTaskFailureSummary,
   extractTaskId,
   extractImageOutputs,
+  modelFileSlug,
   normalizeModel,
   normalizeAspectRatio,
   resolveConfig,
+  saveImageOutputs,
 } from "../scripts/lib/gpt-image-2.mjs";
 
-test("builds the HiAPI task payload for gpt-image-2", () => {
+test("builds the HiAPI task payload for gpt-image-2/text-to-image", () => {
   const payload = buildImagePayload({
     prompt: "Create a product poster",
     aspectRatio: "16:9",
@@ -23,7 +28,7 @@ test("builds the HiAPI task payload for gpt-image-2", () => {
   });
 
   assert.deepEqual(payload, {
-    model: "gpt-image-2",
+    model: "gpt-image-2/text-to-image",
     input: {
       prompt: "Create a product poster",
       aspect_ratio: "16:9",
@@ -34,33 +39,31 @@ test("builds the HiAPI task payload for gpt-image-2", () => {
 
 test("builds GPT Image 2 image-to-image task payloads with input_urls", () => {
   const payload = buildImagePayload({
-    model: "gpt-image-2-image-to-image-pro",
+    model: "gpt-image-2/image-to-image",
     prompt: "Restyle this product photo as a premium catalog image",
     inputUrls: ["https://example.com/reference-1.png", "https://example.com/reference-2.png"],
-    aspectRatio: "auto",
+    aspectRatio: "16:9",
     resolution: "2K",
   });
 
   assert.deepEqual(payload, {
-    model: "gpt-image-2-image-to-image-pro",
+    model: "gpt-image-2/image-to-image",
     input: {
       prompt: "Restyle this product photo as a premium catalog image",
       input_urls: ["https://example.com/reference-1.png", "https://example.com/reference-2.png"],
-      aspect_ratio: "auto",
+      aspect_ratio: "16:9",
       resolution: "2K",
     },
   });
 });
 
 test("validates GPT Image 2 model variants and image-to-image inputs", () => {
-  assert.equal(normalizeModel("gpt-image-2"), "gpt-image-2");
-  assert.equal(normalizeModel("gpt-image-2-pro"), "gpt-image-2-pro");
-  assert.equal(normalizeModel("gpt-image-2-image-to-image"), "gpt-image-2-image-to-image");
-  assert.equal(normalizeModel("gpt-image-2-image-to-image-pro"), "gpt-image-2-image-to-image-pro");
+  assert.equal(normalizeModel("gpt-image-2/text-to-image"), "gpt-image-2/text-to-image");
+  assert.equal(normalizeModel("gpt-image-2/image-to-image"), "gpt-image-2/image-to-image");
   assert.throws(() => normalizeModel("gpt-image-2-beta"), /Unsupported model/);
   assert.throws(
     () => buildImagePayload({
-      model: "gpt-image-2-image-to-image",
+      model: "gpt-image-2/image-to-image",
       prompt: "Restyle this",
       inputUrls: [],
     }),
@@ -68,12 +71,33 @@ test("validates GPT Image 2 model variants and image-to-image inputs", () => {
   );
   assert.throws(
     () => buildImagePayload({
-      model: "gpt-image-2-image-to-image-pro",
+      model: "gpt-image-2/image-to-image",
       prompt: "Restyle this",
       inputUrls: Array.from({ length: 6 }, (_, index) => `https://example.com/${index}.png`),
     }),
     /requires 1-5 input image URLs/,
   );
+  assert.throws(
+    () => buildImagePayload({
+      prompt: "Restyle this",
+      inputUrls: ["https://example.com/a.png"],
+    }),
+    /does not accept input_urls/,
+  );
+});
+
+test("normalizes legacy model names to the new slash names", () => {
+  assert.equal(normalizeModel("gpt-image-2"), "gpt-image-2/text-to-image");
+  assert.equal(normalizeModel("gpt-image-2-image-to-image"), "gpt-image-2/image-to-image");
+  assert.equal(
+    buildImagePayload({ model: "gpt-image-2", prompt: "p" }).model,
+    "gpt-image-2/text-to-image",
+  );
+});
+
+test("rejects retired Pro variants with guidance to the base models", () => {
+  assert.throws(() => normalizeModel("gpt-image-2-pro"), /retired/);
+  assert.throws(() => normalizeModel("gpt-image-2-image-to-image-pro"), /retired/);
 });
 
 test("accepts the current GPT Image 2 aspect ratio set", () => {
@@ -264,7 +288,7 @@ test("reports soft and required skill updates from the manifest", async () => {
   assert.match(available.message, /New version available/);
 });
 
-test("enforces documented cross-field constraints for non-pro models", () => {
+test("enforces documented cross-field constraints for the base models", () => {
   assert.throws(
     () => buildImagePayload({ prompt: "p", aspectRatio: "auto", resolution: "2K" }),
     /aspect_ratio "auto" only supports resolution "1K"/,
@@ -275,7 +299,7 @@ test("enforces documented cross-field constraints for non-pro models", () => {
   );
   assert.throws(
     () => buildImagePayload({
-      model: "gpt-image-2-image-to-image",
+      model: "gpt-image-2/image-to-image",
       prompt: "p",
       inputUrls: ["https://example.com/a.png"],
       aspectRatio: "auto",
@@ -288,15 +312,41 @@ test("enforces documented cross-field constraints for non-pro models", () => {
   assert.equal(buildImagePayload({ prompt: "p", aspectRatio: "auto", resolution: "1K" }).input.resolution, "1K");
   assert.equal(buildImagePayload({ prompt: "p", aspectRatio: "1:1", resolution: "2K" }).input.resolution, "2K");
   assert.equal(buildImagePayload({ prompt: "p", aspectRatio: "16:9", resolution: "4K" }).input.resolution, "4K");
-  // Pro models are not subject to the auto/4K rules (auto+2K is a documented pro i2i combo).
   assert.equal(
     buildImagePayload({
-      model: "gpt-image-2-image-to-image-pro",
+      model: "gpt-image-2/image-to-image",
       prompt: "p",
       inputUrls: ["https://example.com/a.png"],
-      aspectRatio: "auto",
+      aspectRatio: "16:9",
       resolution: "2K",
     }).input.resolution,
     "2K",
   );
+});
+
+test("modelFileSlug strips the slash from the new model id", () => {
+  assert.equal(modelFileSlug("gpt-image-2/text-to-image"), "gpt-image-2-text-to-image");
+  assert.equal(modelFileSlug("gpt-image-2/image-to-image"), "gpt-image-2-image-to-image");
+});
+
+test("saveImageOutputs writes data URIs to files whose names contain no slash", async () => {
+  const outputDir = await mkdtemp(path.join(tmpdir(), "hiapi-gpt-image-2-"));
+  try {
+    const saved = await saveImageOutputs(
+      [{ kind: "data-uri", mimeType: "image/png", value: "data:image/png;base64,AAA" }],
+      { outputDir },
+    );
+
+    assert.equal(saved.length, 1);
+    assert.equal(saved[0].kind, "file");
+    const fileName = path.basename(saved[0].path);
+    assert.ok(fileName.startsWith("gpt-image-2-text-to-image-"), `unexpected file name: ${fileName}`);
+    assert.ok(!fileName.includes("/"), "saved file name must not contain a slash");
+
+    const files = await readdir(outputDir);
+    assert.equal(files.length, 1);
+    assert.ok(!files[0].includes("/"));
+  } finally {
+    await rm(outputDir, { recursive: true, force: true });
+  }
 });

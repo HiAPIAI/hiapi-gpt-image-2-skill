@@ -58,9 +58,8 @@ function printHelp() {
   hiapi-gpt-image-2 --prompt "Create a product poster" --aspect-ratio 16:9
 
 Options:
-      --model           gpt-image-2, gpt-image-2-pro,
-                        gpt-image-2-image-to-image, or gpt-image-2-image-to-image-pro.
-                        Default: gpt-image-2
+      --model           gpt-image-2/text-to-image or gpt-image-2/image-to-image.
+                        Default: gpt-image-2/text-to-image
   -p, --prompt          Image prompt. Positional prompt text is also accepted.
       --aspect-ratio    auto, 1:1, 3:2, 2:3, 4:3, 3:4, 5:4, 4:5,
                         16:9, 9:16, 2:1, 1:2, 3:1, 1:3, 21:9, or 9:21.

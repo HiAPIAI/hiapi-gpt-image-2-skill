@@ -33,12 +33,10 @@ node scripts/hiapi-gpt-image-2.mjs --prompt "Create a launch poster for an AI no
 
 Supported models:
 
-- `gpt-image-2`
-- `gpt-image-2-pro`
-- `gpt-image-2-image-to-image`
-- `gpt-image-2-image-to-image-pro`
+- `gpt-image-2/text-to-image`
+- `gpt-image-2/image-to-image`
 
-For image-to-image requests, use one of the image-to-image models and pass `--input-url` once per reference image. The API field is `input.input_urls`; supported count is 1 to 5 images.
+For image-to-image requests, use `gpt-image-2/image-to-image` and pass `--input-url` once per reference image. The API field is `input.input_urls`; supported count is 1 to 5 images.
 
 Supported aspect ratios:
 
@@ -65,9 +63,7 @@ Supported resolutions:
 - `2K`
 - `4K`
 
-Pro models (`gpt-image-2-pro`, `gpt-image-2-image-to-image-pro`) only support `1K` and `2K`, and a narrower aspect ratio set (no `2:1`, `1:2`, `3:1`, `1:3`, `9:21`; plain pro also has no `auto`).
-
-Cross-field constraints for `gpt-image-2` and `gpt-image-2-image-to-image`:
+Cross-field constraints for `gpt-image-2/text-to-image` and `gpt-image-2/image-to-image`:
 
 - `aspect_ratio=auto` (or omitted) only supports `resolution=1K`.
 - `aspect_ratio=1:1` cannot be combined with `resolution=4K`.
@@ -87,7 +83,7 @@ with:
 
 ```json
 {
-  "model": "gpt-image-2",
+  "model": "gpt-image-2/text-to-image",
   "input": {
     "prompt": "...",
     "aspect_ratio": "16:9",
@@ -100,11 +96,11 @@ Image-to-image:
 
 ```json
 {
-  "model": "gpt-image-2-image-to-image-pro",
+  "model": "gpt-image-2/image-to-image",
   "input": {
     "prompt": "...",
     "input_urls": ["https://example.com/source.png"],
-    "aspect_ratio": "auto",
+    "aspect_ratio": "16:9",
     "resolution": "2K"
   }
 }

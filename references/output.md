@@ -1,6 +1,6 @@
 # Output Handling
 
-HiAPI `gpt-image-2` image generation is asynchronous:
+HiAPI `gpt-image-2/text-to-image` image generation is asynchronous:
 
 ```text
 1. POST /v1/tasks creates an image task and returns data.taskId.
@@ -34,18 +34,20 @@ The CLI prints JSON:
 
 ```json
 {
-  "model": "gpt-image-2",
+  "model": "gpt-image-2/text-to-image",
   "taskId": "task_123",
   "aspectRatio": "16:9",
   "resolution": "1K",
   "outputs": [
     {
       "kind": "file",
-      "path": "/absolute/path/to/outputs/gpt-image-2-20260429-154500-1.png"
+      "path": "/absolute/path/to/outputs/gpt-image-2-text-to-image-20260429-154500-1.png"
     }
   ]
 }
 ```
+
+Saved image file names are derived from the model id with `/` replaced by `-` (for example `gpt-image-2-text-to-image-...png`), so the slash in the model id never appears in a local path.
 
 If no image can be extracted after a successful task, treat the run as failed and show the returned task summary.
 
