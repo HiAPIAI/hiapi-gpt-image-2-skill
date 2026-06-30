@@ -16,9 +16,11 @@ import {
   modelFileSlug,
   normalizeModel,
   normalizeAspectRatio,
+  normalizeStorage,
   resolveConfig,
   saveImageOutputs,
 } from "../scripts/lib/gpt-image-2.mjs";
+import { parseArgs } from "../scripts/hiapi-gpt-image-2.mjs";
 
 test("builds the HiAPI task payload for gpt-image-2/text-to-image", () => {
   const payload = buildImagePayload({
@@ -322,6 +324,41 @@ test("enforces documented cross-field constraints for the base models", () => {
     }).input.resolution,
     "2K",
   );
+});
+
+test("omits storage by default and adds persistent only when requested", () => {
+  // Default: no storage field at all (temp is the implicit API default).
+  const temp = buildImagePayload({ prompt: "p" });
+  assert.equal("storage" in temp, false);
+
+  // Explicit temp also stays implicit.
+  assert.equal("storage" in buildImagePayload({ prompt: "p", storage: "temp" }), false);
+
+  // Persistent surfaces as a top-level field (sibling of model/input).
+  const persistent = buildImagePayload({ prompt: "p", storage: "persistent" });
+  assert.equal(persistent.storage, "persistent");
+  assert.equal("storage" in persistent.input, false);
+
+  // Case-insensitive, and invalid values are rejected with cost guidance.
+  assert.equal(buildImagePayload({ prompt: "p", storage: "PERSISTENT" }).storage, "persistent");
+  assert.equal(normalizeStorage("Persistent"), "persistent");
+  assert.throws(() => normalizeStorage("forever"), /Unsupported storage/);
+  assert.throws(() => buildImagePayload({ prompt: "p", storage: "forever" }), /Unsupported storage/);
+
+  // undefined (flag omitted) falls back to temp; empty string / null are explicit
+  // invalid input and must throw rather than silently coercing to "temp".
+  assert.equal(normalizeStorage(undefined), "temp");
+  assert.equal("storage" in buildImagePayload({ prompt: "p", storage: undefined }), false);
+  assert.throws(() => normalizeStorage(""), /Unsupported storage/);
+  assert.throws(() => normalizeStorage(null), /Unsupported storage/);
+  assert.throws(() => buildImagePayload({ prompt: "p", storage: "" }), /Unsupported storage/);
+  assert.throws(() => buildImagePayload({ prompt: "p", storage: "  " }), /Unsupported storage/);
+});
+
+test("parseArgs reads --storage and omits it when absent", () => {
+  assert.equal(parseArgs(["--prompt", "p", "--storage", "persistent"]).storage, "persistent");
+  assert.equal(parseArgs(["--prompt", "p", "--storage", "temp"]).storage, "temp");
+  assert.equal("storage" in parseArgs(["--prompt", "p"]), false);
 });
 
 test("modelFileSlug strips the slash from the new model id", () => {

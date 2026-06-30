@@ -3,7 +3,7 @@ import path from "node:path";
 
 export const MODEL = "gpt-image-2/text-to-image";
 export const SKILL_ID = "hiapi-gpt-image-2";
-export const SKILL_VERSION = "0.2.0";
+export const SKILL_VERSION = "0.3.0";
 // 老名 → 新名向后兼容映射：现存用户脚本传老名（gpt-image-2 / gpt-image-2-image-to-image）也能用，
 // normalizeModel 入口先归一。退役的 Pro 不在表中 → 传入会落到 throw（提示改用基础版新名）。
 export const MODEL_ALIASES = new Map([
@@ -44,6 +44,11 @@ export const SUPPORTED_ASPECT_RATIOS = new Set([
   "9:21",
 ]);
 export const SUPPORTED_RESOLUTIONS = new Set(["1K", "2K", "4K"]);
+// Output Storage tier. Default "temp" = free, auto-deleted ~7 days after creation.
+// "persistent" keeps the output long-term and is BILLED ($0.05/GB·month). The payload
+// omits the field entirely for "temp" so the API default (temporary) applies untouched.
+export const DEFAULT_STORAGE = "temp";
+export const SUPPORTED_STORAGE = new Set(["temp", "persistent"]);
 export const SUPPORTED_MODELS = new Set([
   "gpt-image-2/text-to-image",
   "gpt-image-2/image-to-image",
@@ -61,6 +66,20 @@ export function normalizeModel(value = MODEL) {
     `Unsupported model "${raw}". The Pro variants (gpt-image-2-pro / gpt-image-2-image-to-image-pro) ` +
       `have been retired — use ${Array.from(SUPPORTED_MODELS).join(" or ")}.`,
   );
+}
+
+export function normalizeStorage(value = DEFAULT_STORAGE) {
+  // Only an omitted value (undefined) falls back to the default. Empty string / null
+  // are treated as explicit invalid input so a malformed value never silently
+  // resolves to "temp" — it surfaces the same cost-aware error as any bad value.
+  const storage = String(value ?? "").trim().toLowerCase();
+  if (!SUPPORTED_STORAGE.has(storage)) {
+    throw new Error(
+      `Unsupported storage "${storage}". Use one of: ${Array.from(SUPPORTED_STORAGE).join(", ")}. ` +
+        `"persistent" keeps outputs beyond ~7 days and is billed ($0.05/GB·month); see https://docs.hiapi.ai/storage/.`,
+    );
+  }
+  return storage;
 }
 
 export function normalizeAspectRatio(value = DEFAULT_ASPECT_RATIO, model = MODEL) {
@@ -100,6 +119,7 @@ export function buildImagePayload({
   aspectRatio = DEFAULT_ASPECT_RATIO,
   resolution = DEFAULT_RESOLUTION,
   inputUrls,
+  storage,
 } = {}) {
   const normalizedModel = normalizeModel(model);
   const normalizedPrompt = String(prompt || "").trim();
@@ -139,9 +159,14 @@ export function buildImagePayload({
     resolution: normalizedResolution,
   };
 
+  // storage is a TOP-LEVEL field (sibling of model/input), per HiAPI Output Storage docs.
+  // Only emit it for "persistent"; "temp" is the API default and is left implicit.
+  const normalizedStorage = normalizeStorage(storage);
+
   return {
     model: normalizedModel,
     input,
+    ...(normalizedStorage === "persistent" ? { storage: "persistent" } : {}),
   };
 }
 

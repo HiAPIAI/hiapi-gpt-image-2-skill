@@ -1,5 +1,7 @@
 #!/usr/bin/env node
+import { realpathSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
   buildImagePayload,
@@ -11,7 +13,7 @@ import {
   waitForImage,
 } from "./lib/gpt-image-2.mjs";
 
-function parseArgs(argv) {
+export function parseArgs(argv) {
   const options = {
     aspectRatio: "auto",
     outputDir: "outputs",
@@ -35,6 +37,8 @@ function parseArgs(argv) {
       options.inputUrls.push(argv[++i]);
     } else if (arg === "--output-dir" || arg === "-o") {
       options.outputDir = argv[++i];
+    } else if (arg === "--storage") {
+      options.storage = argv[++i];
     } else if (arg === "--no-save") {
       options.save = false;
     } else if (arg === "--no-wait") {
@@ -67,6 +71,9 @@ Options:
       --resolution      1K, 2K, or 4K. Default: 1K
       --input-url       Repeatable. Required 1-5 times for image-to-image models.
   -o, --output-dir      Directory for generated image files. Default: outputs
+      --storage         temp or persistent. Default: temp (free, expires ~7 days).
+                        "persistent" keeps the output long-term and is BILLED
+                        ($0.05/GB·month). See https://docs.hiapi.ai/storage/
       --no-save         Return remote URLs or data URIs without writing files
       --no-wait         Create the task and return the task id
   -h, --help            Show this help
@@ -92,7 +99,15 @@ async function main() {
     aspectRatio: options.aspectRatio,
     resolution: options.resolution,
     inputUrls: options.inputUrls,
+    storage: options.storage,
   });
+
+  // Persistent storage costs money; warn on stderr so stdout stays clean JSON.
+  if (payload.storage === "persistent") {
+    console.error(
+      'Note: --storage persistent keeps this output beyond ~7 days and is billed at $0.05/GB·month (charged daily). Delete it to stop charges. See https://docs.hiapi.ai/storage/',
+    );
+  }
 
   const created = await createImageTask(payload, { config });
   const taskId = extractTaskId(created);
@@ -109,6 +124,7 @@ async function main() {
           status: "created",
           aspectRatio: payload.input.aspect_ratio,
           resolution: payload.input.resolution,
+          storage: payload.storage ?? "temp",
           outputs: [],
         },
         null,
@@ -134,6 +150,7 @@ async function main() {
         taskId,
         aspectRatio: payload.input.aspect_ratio,
         resolution: payload.input.resolution,
+        storage: payload.storage ?? "temp",
         outputs: savedOutputs,
         rawStatus: response,
       },
@@ -143,7 +160,25 @@ async function main() {
   );
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exitCode = 1;
-});
+// Only run the CLI when executed directly, not when imported (e.g. by tests).
+// Compare real paths so a symlinked bin (npm/npx wires bins as symlinks into
+// node_modules/.bin) still resolves to this module and runs main().
+function isInvokedDirectly() {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  const modulePath = fileURLToPath(import.meta.url);
+  try {
+    if (realpathSync(entry) === modulePath) return true;
+  } catch {
+    // entry may not exist on disk (e.g. a virtual wrapper); fall through.
+  }
+  // Fallback: tolerate a missing extension on the invoked path (some shims drop it).
+  return entry === modulePath || `${entry}.mjs` === modulePath;
+}
+
+if (isInvokedDirectly()) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  });
+}

@@ -119,6 +119,11 @@ Image-to-image:
 
 For details, read `references/api.md` and `references/output.md`.
 
+## Result Lifecycle And Production Notes
+
+- **Callbacks (production):** Polling `GET /v1/tasks/{taskId}` is fine for this CLI and local debugging. For production backends, HiAPI recommends a top-level `callback.url` with `when: final` so HiAPI notifies your service instead of you polling. This skill does not send `callback`; see `references/api.md`.
+- **Output retention (paid if extended):** Generated outputs are temporary and expire about 7 days after creation; downloads are always free. By default this skill uses the temporary tier. To keep specific outputs longer, run with `--storage persistent` — the output then uses the persistent tier, billed at `$0.05 / GB · month` (charged daily). Only suggest this after telling the user it costs money; point them to https://docs.hiapi.ai/storage/. Deleting a persistent output stops its charges.
+
 ## Check Configuration
 
 Run:
