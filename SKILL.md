@@ -36,7 +36,7 @@ Supported models:
 - `gpt-image-2/text-to-image`
 - `gpt-image-2/image-to-image`
 
-For image-to-image requests, use `gpt-image-2/image-to-image` and pass `--input-url` once per reference image. The API field is `input.input_urls`; supported count is 1 to 5 images.
+For image-to-image requests, use `gpt-image-2/image-to-image` and pass `--input-url` once per reference image. The API field is `input.input_urls`; supported count is 1 to 16 public JPEG, PNG, or WebP images.
 
 Supported aspect ratios:
 
@@ -63,10 +63,20 @@ Supported resolutions:
 - `2K`
 - `4K`
 
+Optional background (`--background`):
+
+- `auto`
+- `opaque`
+- `transparent`
+
 Cross-field constraints for `gpt-image-2/text-to-image` and `gpt-image-2/image-to-image`:
 
 - `aspect_ratio=auto` (or omitted) only supports `resolution=1K`.
 - `aspect_ratio=1:1` cannot be combined with `resolution=4K`.
+- `5:4`, `4:5`, `3:1`, `1:3`, and `9:21` only support `resolution=1K`.
+- `background` (any value) only supports `resolution=1K`; omit it for 2K/4K.
+
+The CLI validates all of these locally before creating a task, so an unsupported combination never becomes a rejected paid task.
 
 The script writes generated data URI images to `outputs/` and prints JSON with the saved file paths or remote URLs.
 

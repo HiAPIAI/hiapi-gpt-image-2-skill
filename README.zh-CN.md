@@ -120,10 +120,11 @@ node scripts/check-config.mjs --live
 ### 功能
 
 - 文生图：描述你想要的画面，生成图片
-- 图生图：使用 `gpt-image-2/image-to-image`，通过 `--input-url` 传参考图片
+- 图生图：使用 `gpt-image-2/image-to-image`，通过 `--input-url` 传 1-16 张公开的 JPEG/PNG/WebP 参考图
 - 模型变体：`gpt-image-2/text-to-image`、`gpt-image-2/image-to-image`
 - 多种比例：`auto`、`1:1`、`3:2`、`2:3`、`4:3`、`3:4`、`5:4`、`4:5`、`16:9`、`9:16`、`2:1`、`1:2`、`3:1`、`1:3`、`21:9`、`9:21`
-- 分辨率：`1K`、`2K`、`4K`
+- 分辨率：`1K`、`2K`、`4K`（`auto`、`5:4`、`4:5`、`3:1`、`1:3`、`9:21` 和 `--background` 仅支持 1K；`1:1` 不支持 4K）
+- 背景：可选 `--background auto|opaque|transparent`，仅 1K
 - 本地输出：图片会保存到 `outputs/`
 - URL 输出：如果 HiAPI 返回图片 URL，Agent 会直接返回 URL
 - 错误提示：未配置 Key、Key 无效、余额不足、限流、内容安全拦截都有明确下一步
@@ -172,9 +173,11 @@ node scripts/hiapi-gpt-image-2.mjs \
 
 ```text
 .
+├── CHANGELOG.md
 ├── README.md
 ├── README.zh-CN.md
 ├── SKILL.md
+├── update-policy.json
 ├── agents/
 │   └── openai.yaml
 ├── references/
