@@ -5,7 +5,7 @@
 - `gpt-image-2/image-to-image` now accepts 1–16 `input_urls`, matching the current HiAPI schema (was 1–5).
 - Added `--background auto|opaque|transparent`. HiAPI only accepts `background` at `resolution=1K`; the CLI validates this before creating a task.
 - Added the documented 1K-only rule for `5:4`, `4:5`, `3:1`, `1:3`, and `9:21` to local validation, so unsupported 2K/4K combinations fail locally instead of as a rejected task.
-- Added `update-policy.json` as the repository fallback for the central `hiapi-skills` upgrade policy. This is a soft upgrade: older versions keep working and only print a notice.
+- Added `update-policy.json` as the repository fallback for the central `hiapi-skills` upgrade policy. This is a **hard upgrade**: `minimumVersion` is 0.4.0, so older versions stop creating new paid tasks and print the update command until updated (dry-run, validation, and recovery of existing tasks are unaffected).
 
 ## 0.3.0
 

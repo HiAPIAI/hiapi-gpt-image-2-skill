@@ -3,9 +3,9 @@
   "version": "0.4.0",
   "updatePolicy": {
     "latestVersion": "0.4.0",
-    "minimumVersion": "0.1.3",
+    "minimumVersion": "0.4.0",
     "updateCommand": "npx -y github:HiAPIAI/hiapi-gpt-image-2-skill -y",
     "notice": "A newer HiAPI GPT Image 2 skill (0.4.0) is available. It raises image-to-image references to 1-16, adds --background, and validates the current 1K-only aspect ratio and background rules before creating a task.",
-    "requiredNotice": "This HiAPI GPT Image 2 skill version is missing current GPT Image 2 image-to-image support or may hide the real task failure reason. Update before creating more image tasks."
+    "requiredNotice": "This HiAPI GPT Image 2 skill version is out of date: it rejects valid 6-16 reference requests, cannot send background, and does not validate the current 1K-only rules, so requests may be rejected or mis-built. Update to 0.4.0 before creating more image tasks."
   }
 }
