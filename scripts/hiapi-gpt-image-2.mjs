@@ -32,6 +32,8 @@ export function parseArgs(argv) {
       options.aspectRatio = argv[++i];
     } else if (arg === "--resolution") {
       options.resolution = argv[++i];
+    } else if (arg === "--background") {
+      options.background = argv[++i];
     } else if (arg === "--input-url" || arg === "--input-urls" || arg === "--input-image-url") {
       if (!options.inputUrls) options.inputUrls = [];
       options.inputUrls.push(argv[++i]);
@@ -69,7 +71,10 @@ Options:
                         16:9, 9:16, 2:1, 1:2, 3:1, 1:3, 21:9, or 9:21.
                         Default: auto
       --resolution      1K, 2K, or 4K. Default: 1K
-      --input-url       Repeatable. Required 1-5 times for image-to-image models.
+                        auto aspect ratio, 5:4, 4:5, 3:1, 1:3, 9:21 and
+                        --background require 1K; 1:1 cannot use 4K.
+      --background      auto, opaque, or transparent (1K only). Omitted by default.
+      --input-url       Repeatable. Required 1-16 times for image-to-image models.
   -o, --output-dir      Directory for generated image files. Default: outputs
       --storage         temp or persistent. Default: temp (free, expires ~7 days).
                         "persistent" keeps the output long-term and is BILLED
@@ -99,6 +104,7 @@ async function main() {
     aspectRatio: options.aspectRatio,
     resolution: options.resolution,
     inputUrls: options.inputUrls,
+    background: options.background,
     storage: options.storage,
   });
 
@@ -124,6 +130,7 @@ async function main() {
           status: "created",
           aspectRatio: payload.input.aspect_ratio,
           resolution: payload.input.resolution,
+          ...(payload.input.background ? { background: payload.input.background } : {}),
           storage: payload.storage ?? "temp",
           outputs: [],
         },
@@ -150,6 +157,7 @@ async function main() {
         taskId,
         aspectRatio: payload.input.aspect_ratio,
         resolution: payload.input.resolution,
+        ...(payload.input.background ? { background: payload.input.background } : {}),
         storage: payload.storage ?? "temp",
         outputs: savedOutputs,
         rawStatus: response,

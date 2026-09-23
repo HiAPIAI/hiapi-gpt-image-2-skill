@@ -16,6 +16,7 @@ import {
   modelFileSlug,
   normalizeModel,
   normalizeAspectRatio,
+  normalizeBackground,
   normalizeStorage,
   resolveConfig,
   saveImageOutputs,
@@ -69,15 +70,15 @@ test("validates GPT Image 2 model variants and image-to-image inputs", () => {
       prompt: "Restyle this",
       inputUrls: [],
     }),
-    /requires 1-5 input image URLs/,
+    /requires 1-16 input image URLs/,
   );
   assert.throws(
     () => buildImagePayload({
       model: "gpt-image-2/image-to-image",
       prompt: "Restyle this",
-      inputUrls: Array.from({ length: 6 }, (_, index) => `https://example.com/${index}.png`),
+      inputUrls: Array.from({ length: 17 }, (_, index) => `https://example.com/${index}.png`),
     }),
-    /requires 1-5 input image URLs/,
+    /requires 1-16 input image URLs/,
   );
   assert.throws(
     () => buildImagePayload({
@@ -324,6 +325,48 @@ test("enforces documented cross-field constraints for the base models", () => {
     }).input.resolution,
     "2K",
   );
+});
+
+test("accepts up to 16 image-to-image references", () => {
+  const payload = buildImagePayload({
+    model: "gpt-image-2/image-to-image",
+    prompt: "p",
+    inputUrls: Array.from({ length: 16 }, (_, index) => `https://example.com/${index}.png`),
+  });
+  assert.equal(payload.input.input_urls.length, 16);
+});
+
+test("enforces the 1K-only aspect ratios documented for the default route", () => {
+  for (const aspectRatio of ["5:4", "4:5", "3:1", "1:3", "9:21"]) {
+    assert.throws(
+      () => buildImagePayload({ prompt: "p", aspectRatio, resolution: "2K" }),
+      /only supports resolution "1K"/,
+    );
+    assert.equal(buildImagePayload({ prompt: "p", aspectRatio, resolution: "1K" }).input.aspect_ratio, aspectRatio);
+  }
+  assert.equal(buildImagePayload({ prompt: "p", aspectRatio: "21:9", resolution: "4K" }).input.resolution, "4K");
+});
+
+test("background is optional, validated, and limited to 1K", () => {
+  assert.equal(normalizeBackground(undefined), undefined);
+  assert.equal(normalizeBackground("Transparent"), "transparent");
+  assert.throws(() => normalizeBackground("blur"), /Unsupported background/);
+
+  const withoutBackground = buildImagePayload({ prompt: "p" });
+  assert.equal("background" in withoutBackground.input, false);
+
+  const transparent = buildImagePayload({ prompt: "p", aspectRatio: "1:1", resolution: "1K", background: "transparent" });
+  assert.equal(transparent.input.background, "transparent");
+
+  assert.throws(
+    () => buildImagePayload({ prompt: "p", aspectRatio: "16:9", resolution: "2K", background: "opaque" }),
+    /background "opaque" only supports resolution "1K"/,
+  );
+});
+
+test("parseArgs reads --background and omits it when absent", () => {
+  assert.equal(parseArgs(["--prompt", "p"]).background, undefined);
+  assert.equal(parseArgs(["--prompt", "p", "--background", "transparent"]).background, "transparent");
 });
 
 test("omits storage by default and adds persistent only when requested", () => {

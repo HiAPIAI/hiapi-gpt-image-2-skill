@@ -120,10 +120,11 @@ Ask your AI Agent to generate images with natural language, or provide reference
 ### Features
 
 - Text-to-image: describe the image you want and generate it
-- Image-to-image: use `gpt-image-2/image-to-image` with `--input-url` values
+- Image-to-image: use `gpt-image-2/image-to-image` with 1-16 `--input-url` values (public JPEG/PNG/WebP)
 - Model variants: `gpt-image-2/text-to-image`, `gpt-image-2/image-to-image`
 - Aspect ratios: `auto`, `1:1`, `3:2`, `2:3`, `4:3`, `3:4`, `5:4`, `4:5`, `16:9`, `9:16`, `2:1`, `1:2`, `3:1`, `1:3`, `21:9`, `9:21`
-- Resolutions: `1K`, `2K`, `4K`
+- Resolutions: `1K`, `2K`, `4K` (`auto`, `5:4`, `4:5`, `3:1`, `1:3`, `9:21` and `--background` are 1K-only; `1:1` cannot use 4K)
+- Background: optional `--background auto|opaque|transparent` at 1K
 - Local output: images are saved to `outputs/`
 - URL output: if HiAPI returns an image URL, the Agent returns the URL directly
 - Clear errors: missing Key, invalid Key, insufficient balance, rate limits, and safety policy blocks all include a next step
@@ -172,9 +173,11 @@ node scripts/hiapi-gpt-image-2.mjs \
 
 ```text
 .
+├── CHANGELOG.md
 ├── README.md
 ├── README.zh-CN.md
 ├── SKILL.md
+├── update-policy.json
 ├── agents/
 │   └── openai.yaml
 ├── references/
