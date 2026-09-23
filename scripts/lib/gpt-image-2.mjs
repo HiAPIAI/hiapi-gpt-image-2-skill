@@ -3,7 +3,7 @@ import path from "node:path";
 
 export const MODEL = "gpt-image-2/text-to-image";
 export const SKILL_ID = "hiapi-gpt-image-2";
-export const SKILL_VERSION = "0.3.0";
+export const SKILL_VERSION = "0.4.0";
 // 老名 → 新名向后兼容映射：现存用户脚本传老名（gpt-image-2 / gpt-image-2-image-to-image）也能用，
 // normalizeModel 入口先归一。退役的 Pro 不在表中 → 传入会落到 throw（提示改用基础版新名）。
 export const MODEL_ALIASES = new Map([
@@ -44,6 +44,12 @@ export const SUPPORTED_ASPECT_RATIOS = new Set([
   "9:21",
 ]);
 export const SUPPORTED_RESOLUTIONS = new Set(["1K", "2K", "4K"]);
+// gpt-image-2/image-to-image accepts 1-16 reference images (HiAPI schema input_urls maxItems=16).
+export const MAX_INPUT_URLS = 16;
+// Optional background control. HiAPI only accepts `background` when resolution is 1K.
+export const SUPPORTED_BACKGROUNDS = new Set(["auto", "opaque", "transparent"]);
+// Documented HiAPI rule: these aspect ratios are available at 1K only on the default route.
+export const ONE_K_ONLY_ASPECT_RATIOS = new Set(["5:4", "4:5", "3:1", "1:3", "9:21"]);
 // Output Storage tier. Default "temp" = free, auto-deleted ~7 days after creation.
 // "persistent" keeps the output long-term and is BILLED ($0.05/GB·month). The payload
 // omits the field entirely for "temp" so the API default (temporary) applies untouched.
@@ -104,6 +110,18 @@ export function normalizeResolution(value = DEFAULT_RESOLUTION, model = MODEL) {
   return resolution;
 }
 
+export function normalizeBackground(value) {
+  // Omitted background stays omitted so the API default applies untouched.
+  if (value === undefined || value === null || value === "") return undefined;
+  const background = String(value).trim().toLowerCase();
+  if (!SUPPORTED_BACKGROUNDS.has(background)) {
+    throw new Error(
+      `Unsupported background "${background}". Use one of: ${Array.from(SUPPORTED_BACKGROUNDS).join(", ")}.`,
+    );
+  }
+  return background;
+}
+
 export function normalizeInputUrls(value) {
   if (value === undefined || value === null || value === "") return [];
   const raw = Array.isArray(value) ? value : [value];
@@ -119,6 +137,7 @@ export function buildImagePayload({
   aspectRatio = DEFAULT_ASPECT_RATIO,
   resolution = DEFAULT_RESOLUTION,
   inputUrls,
+  background,
   storage,
 } = {}) {
   const normalizedModel = normalizeModel(model);
@@ -128,8 +147,8 @@ export function buildImagePayload({
   }
 
   const normalizedInputUrls = normalizeInputUrls(inputUrls);
-  if (IMAGE_TO_IMAGE_MODELS.has(normalizedModel) && (normalizedInputUrls.length < 1 || normalizedInputUrls.length > 5)) {
-    throw new Error(`${normalizedModel} requires 1-5 input image URLs via input_urls.`);
+  if (IMAGE_TO_IMAGE_MODELS.has(normalizedModel) && (normalizedInputUrls.length < 1 || normalizedInputUrls.length > MAX_INPUT_URLS)) {
+    throw new Error(`${normalizedModel} requires 1-${MAX_INPUT_URLS} input image URLs via input_urls.`);
   }
   if (!IMAGE_TO_IMAGE_MODELS.has(normalizedModel) && normalizedInputUrls.length > 0) {
     throw new Error(`${normalizedModel} does not accept input_urls. Use gpt-image-2/image-to-image.`);
@@ -137,6 +156,7 @@ export function buildImagePayload({
 
   const normalizedAspectRatio = normalizeAspectRatio(aspectRatio, normalizedModel);
   const normalizedResolution = normalizeResolution(resolution, normalizedModel);
+  const normalizedBackground = normalizeBackground(background);
 
   // Cross-field constraints documented for gpt-image-2 and gpt-image-2-image-to-image.
   if (normalizedModel === "gpt-image-2/text-to-image" || normalizedModel === "gpt-image-2/image-to-image") {
@@ -150,6 +170,16 @@ export function buildImagePayload({
         `aspect_ratio "1:1" cannot be combined with resolution "4K" for ${normalizedModel}. Use 1K or 2K, or pick a non-square aspect ratio for 4K.`,
       );
     }
+    if (ONE_K_ONLY_ASPECT_RATIOS.has(normalizedAspectRatio) && normalizedResolution !== "1K") {
+      throw new Error(
+        `aspect_ratio "${normalizedAspectRatio}" only supports resolution "1K" for ${normalizedModel}. Use --resolution 1K, or pick another aspect ratio for ${normalizedResolution}.`,
+      );
+    }
+    if (normalizedBackground !== undefined && normalizedResolution !== "1K") {
+      throw new Error(
+        `background "${normalizedBackground}" only supports resolution "1K" for ${normalizedModel}. Use --resolution 1K, or omit --background for ${normalizedResolution}.`,
+      );
+    }
   }
 
   const input = {
@@ -157,6 +187,7 @@ export function buildImagePayload({
     ...(normalizedInputUrls.length > 0 ? { input_urls: normalizedInputUrls } : {}),
     aspect_ratio: normalizedAspectRatio,
     resolution: normalizedResolution,
+    ...(normalizedBackground !== undefined ? { background: normalizedBackground } : {}),
   };
 
   // storage is a TOP-LEVEL field (sibling of model/input), per HiAPI Output Storage docs.

@@ -72,7 +72,7 @@ node scripts/hiapi-gpt-image-2.mjs \
   --resolution 2K
 ```
 
-Supported models are `gpt-image-2/text-to-image` and `gpt-image-2/image-to-image`. The image-to-image model requires 1-5 `--input-url` values; the text-to-image model must not receive input URLs.
+Supported models are `gpt-image-2/text-to-image` and `gpt-image-2/image-to-image`. The image-to-image model requires 1-16 `--input-url` values; the text-to-image model must not receive input URLs. Add `--background auto|opaque|transparent` only with `--resolution 1K`; `auto` aspect ratio, `5:4`, `4:5`, `3:1`, `1:3`, and `9:21` are also 1K-only, and `1:1` cannot use 4K.
 
 ## Prompt Recipe Source
 
