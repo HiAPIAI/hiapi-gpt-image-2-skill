@@ -123,8 +123,10 @@ node scripts/check-config.mjs --live
 - 图生图：使用 `gpt-image-2/image-to-image`，通过 `--input-url` 传 1-16 张公开的 JPEG/PNG/WebP 参考图
 - 模型变体：`gpt-image-2/text-to-image`、`gpt-image-2/image-to-image`
 - 多种比例：`auto`、`1:1`、`3:2`、`2:3`、`4:3`、`3:4`、`5:4`、`4:5`、`16:9`、`9:16`、`2:1`、`1:2`、`3:1`、`1:3`、`21:9`、`9:21`
-- 分辨率：`1K`、`2K`、`4K`（`auto` 和 `--background` 仅支持 1K；2K 不支持 `5:4`、`4:5`、`3:1`、`1:3`、`9:21`；4K 不支持 `1:1`、`3:1`、`1:3`、`9:21`）
+- 分辨率：`1K`、`2K`、`4K`（默认路由：`auto` 和 `--background` 仅支持 1K；2K 不支持 `5:4`、`4:5`、`3:1`、`1:3`、`9:21`；4K 不支持 `3:1`、`1:3`、`9:21`，文生图另不支持 `1:1`）
 - 背景：可选 `--background auto|opaque|transparent`，仅 1K
+- 路由：`--route beta`（仅文生图，用 `--size` 指定像素尺寸，如 `1536x1024`）和 `--route ext`（所有比例都支持 1K/2K/4K，需 `--quality low|medium|high`；图生图 1-6 张参考图）
+- 付费任务安全：`--dry-run` / `--estimate` 不创建任务；每次创建都带 `Idempotency-Key`；`--resume-task-id` 可恢复已有任务，不会重复扣费
 - 本地输出：图片会保存到 `outputs/`
 - URL 输出：如果 HiAPI 返回图片 URL，Agent 会直接返回 URL
 - 错误提示：未配置 Key、Key 无效、余额不足、限流、内容安全拦截都有明确下一步
@@ -156,6 +158,21 @@ node scripts/hiapi-gpt-image-2.mjs \
   --input-url "https://example.com/product.jpg" \
   --aspect-ratio 16:9 \
   --resolution 2K
+```
+
+ext 路由的全比例 4K，先核对价格：
+
+```bash
+node scripts/hiapi-gpt-image-2.mjs \
+  --prompt "Tall editorial poster for a jazz festival" \
+  --route ext --aspect-ratio 9:21 --resolution 4K --quality high \
+  --dry-run --estimate
+```
+
+超时后恢复任务（不会新建任务）：
+
+```bash
+node scripts/hiapi-gpt-image-2.mjs --resume-task-id <task-id>
 ```
 
 自定义输出目录：
