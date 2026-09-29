@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.1 — 2026-09-29
+
+- Replaced the stale "1K-only" rule with the current default-route limits: 2K is unavailable for `5:4`, `4:5`, `3:1`, `1:3`, `9:21`; 4K is unavailable for `1:1`, `3:1`, `1:3`, `9:21`. `5:4` and `4:5` now pass at 4K instead of failing locally.
+- **Hard upgrade**: `minimumVersion` is 0.4.1, so 0.4.0 and older stop creating new paid tasks until updated (dry-run, validation, and recovery of existing tasks are unaffected).
+
 ## 0.4.0 — 2026-09-23
 
 - `gpt-image-2/image-to-image` now accepts 1–16 `input_urls`, matching the current HiAPI schema (was 1–5).
