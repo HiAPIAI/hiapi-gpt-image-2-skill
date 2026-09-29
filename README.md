@@ -123,7 +123,7 @@ Ask your AI Agent to generate images with natural language, or provide reference
 - Image-to-image: use `gpt-image-2/image-to-image` with 1-16 `--input-url` values (public JPEG/PNG/WebP)
 - Model variants: `gpt-image-2/text-to-image`, `gpt-image-2/image-to-image`
 - Aspect ratios: `auto`, `1:1`, `3:2`, `2:3`, `4:3`, `3:4`, `5:4`, `4:5`, `16:9`, `9:16`, `2:1`, `1:2`, `3:1`, `1:3`, `21:9`, `9:21`
-- Resolutions: `1K`, `2K`, `4K` (`auto`, `5:4`, `4:5`, `3:1`, `1:3`, `9:21` and `--background` are 1K-only; `1:1` cannot use 4K)
+- Resolutions: `1K`, `2K`, `4K` (`auto` and `--background` are 1K-only; 2K is unavailable for `5:4`, `4:5`, `3:1`, `1:3`, `9:21`; 4K is unavailable for `1:1`, `3:1`, `1:3`, `9:21`)
 - Background: optional `--background auto|opaque|transparent` at 1K
 - Local output: images are saved to `outputs/`
 - URL output: if HiAPI returns an image URL, the Agent returns the URL directly
