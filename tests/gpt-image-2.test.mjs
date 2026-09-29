@@ -13,7 +13,9 @@ import {
   extractTaskFailureSummary,
   extractTaskId,
   extractImageOutputs,
+  fetchPricingEstimate,
   modelFileSlug,
+  normalizeIdempotencyKey,
   normalizeModel,
   normalizeAspectRatio,
   normalizeBackground,
@@ -437,4 +439,110 @@ test("saveImageOutputs writes data URIs to files whose names contain no slash", 
   } finally {
     await rm(outputDir, { recursive: true, force: true });
   }
+});
+
+test("image-to-image allows 1:1 at 4K on the default route, text-to-image does not", () => {
+  const i2i = { model: "gpt-image-2/image-to-image", prompt: "p", inputUrls: ["https://example.com/a.png"] };
+  assert.equal(buildImagePayload({ ...i2i, aspectRatio: "1:1", resolution: "4K" }).input.resolution, "4K");
+  assert.throws(() => buildImagePayload({ ...i2i, aspectRatio: "9:21", resolution: "4K" }), /cannot be combined with resolution "4K"/);
+  assert.throws(() => buildImagePayload({ prompt: "p", aspectRatio: "1:1", resolution: "4K" }), /--route ext/);
+});
+
+test("default route omits route from the payload", () => {
+  assert.equal("route" in buildImagePayload({ prompt: "p", route: "default" }), false);
+});
+
+test("beta route sends size only and is text-to-image only", () => {
+  assert.deepEqual(buildImagePayload({ prompt: "p", route: "beta", size: "1536x1024" }), {
+    model: "gpt-image-2/text-to-image",
+    route: "beta",
+    input: { prompt: "p", size: "1536x1024" },
+  });
+  assert.equal(buildImagePayload({ prompt: "p", route: "beta" }).input.size, "auto");
+  assert.throws(() => buildImagePayload({ prompt: "p", route: "beta", size: "1024X1024" }), /Unsupported size/);
+  assert.throws(() => buildImagePayload({ prompt: "p", route: "beta", aspectRatio: "16:9" }), /not accepted on the beta route/);
+  assert.throws(
+    () => buildImagePayload({ model: "gpt-image-2/image-to-image", prompt: "p", route: "beta", inputUrls: ["https://e.com/a.png"] }),
+    /only available for gpt-image-2\/text-to-image/,
+  );
+});
+
+test("ext route requires quality, allows every ratio at 4K, and uses image_urls 1-6", () => {
+  assert.deepEqual(buildImagePayload({ prompt: "p", route: "ext" }), {
+    model: "gpt-image-2/text-to-image",
+    route: "ext",
+    input: { prompt: "p", aspect_ratio: "1:1", resolution: "1K", quality: "low" },
+  });
+  assert.equal(buildImagePayload({ prompt: "p", route: "ext", aspectRatio: "9:21", resolution: "4K", quality: "high" }).input.resolution, "4K");
+  const i2i = buildImagePayload({
+    model: "gpt-image-2/image-to-image",
+    prompt: "p",
+    route: "ext",
+    inputUrls: ["https://e.com/a.png"],
+    quality: "medium",
+  });
+  assert.deepEqual(i2i.input, { prompt: "p", image_urls: ["https://e.com/a.png"], aspect_ratio: "auto", resolution: "1K", quality: "medium" });
+  assert.throws(
+    () => buildImagePayload({ model: "gpt-image-2/image-to-image", prompt: "p", route: "ext", inputUrls: Array(7).fill("https://e.com/a.png") }),
+    /requires 1-6 input image URLs via image_urls/,
+  );
+  assert.throws(() => buildImagePayload({ prompt: "p", route: "ext", background: "transparent" }), /not accepted on the ext route/);
+  assert.throws(() => buildImagePayload({ prompt: "p", route: "ext", quality: "ultra" }), /Unsupported quality/);
+});
+
+test("--quality and --size are rejected outside their routes", () => {
+  assert.throws(() => buildImagePayload({ prompt: "p", quality: "high" }), /only accepted on the ext route/);
+  assert.throws(() => buildImagePayload({ prompt: "p", size: "1024x1024" }), /only accepted on the beta route/);
+  assert.throws(() => buildImagePayload({ prompt: "p", route: "pro" }), /Unsupported route/);
+});
+
+test("createImageTask sends the Idempotency-Key header when given", async () => {
+  let headers = {};
+  const fetchImpl = async (_url, init) => {
+    headers = init.headers;
+    return new Response(JSON.stringify({ data: { taskId: "tk-1" } }), { status: 200 });
+  };
+  await createImageTask(buildImagePayload({ prompt: "p" }), {
+    config: { apiKey: "k", baseUrl: "https://api.hiapi.ai" },
+    fetchImpl,
+    idempotencyKey: "key-1",
+  });
+  assert.equal(headers["Idempotency-Key"], "key-1");
+  assert.match(normalizeIdempotencyKey(), /^[0-9a-f-]{36}$/);
+  assert.throws(() => normalizeIdempotencyKey("a\nb"), /control characters/);
+  assert.throws(() => normalizeIdempotencyKey("x".repeat(256)), /at most 255/);
+});
+
+test("fetchPricingEstimate matches routed pricing rows without creating a task", async () => {
+  const pricing = {
+    data: [
+      { model_name: "gpt-image-2/text-to-image", base_usd_value: 0.03, policies: [{ rule: { resolution: { match: "4K" } }, usd_value: 0.06 }] },
+      { model_name: "gpt-image-2/text-to-image@ext", base_usd_value: 0.007, policies: [{ rule: { quality: { match: "high" }, resolution: { match: "4K" } }, usd_value: 0.76 }] },
+      { model_name: "gpt-image-2/text-to-image@beta", base_usd_value: 0.02, policies: [{ rule: { size: { with: true } }, usd_value: 0.02 }] },
+    ],
+  };
+  const requested = [];
+  const fetchImpl = async (url) => {
+    requested.push(url);
+    return new Response(JSON.stringify(pricing), { status: 200 });
+  };
+  const est = (opts) => fetchPricingEstimate(buildImagePayload({ prompt: "p", ...opts }), { fetchImpl, siteUrl: "https://www.hiapi.ai" });
+  assert.equal((await est({ aspectRatio: "16:9", resolution: "4K" })).estimatedUsd, 0.06);
+  assert.equal((await est({ route: "ext", aspectRatio: "16:9", resolution: "4K", quality: "high" })).pricingModel, "gpt-image-2/text-to-image@ext");
+  assert.equal((await est({ route: "ext", aspectRatio: "16:9", resolution: "4K", quality: "high" })).estimatedUsd, 0.76);
+  assert.equal((await est({ route: "beta" })).estimatedUsd, 0.02);
+  assert.ok(requested.every((url) => url === "https://www.hiapi.ai/api/pricing"));
+});
+
+test("parseArgs reads route, recovery, and preflight flags", () => {
+  const options = parseArgs(["--prompt", "p", "--route", "ext", "--quality", "high", "--dry-run", "--estimate", "--idempotency-key", "k"]);
+  assert.equal(options.route, "ext");
+  assert.equal(options.quality, "high");
+  assert.equal(options.dryRun, true);
+  assert.equal(options.estimate, true);
+  assert.equal(options.idempotencyKey, "k");
+  assert.equal(parseArgs(["--route", "beta", "--size", "1024x1024"]).size, "1024x1024");
+  assert.equal(parseArgs(["--resume-task-id", "tk-1"]).resumeTaskId, "tk-1");
+  assert.equal(parseArgs(["--prompt", "p"]).aspectRatio, undefined);
+  assert.throws(() => parseArgs(["--resume-task-id", "tk-1", "--dry-run"]), /cannot be combined/);
 });

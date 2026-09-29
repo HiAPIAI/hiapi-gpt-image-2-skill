@@ -1,6 +1,6 @@
 ---
 name: hiapi-gpt-image-2
-description: Generate images with HiAPI's GPT Image 2 family via the HiAPI unified async task API. Use when a user asks to create or edit an image with GPT Image 2, HiAPI GPT Image 2, or this specific skill.
+description: Generate images with HiAPI's GPT Image 2 family (default, beta, and ext multi-ratio 4K routes) via the HiAPI unified async task API, with non-billing dry-run/estimate, idempotent task creation, and create-free recovery. Use when a user asks to create or edit an image with GPT Image 2, HiAPI GPT Image 2, or this specific skill.
 metadata:
   short-description: Generate GPT Image 2 images through HiAPI
 ---
@@ -29,6 +29,14 @@ Run:
 
 ```bash
 node scripts/hiapi-gpt-image-2.mjs --prompt "Create a launch poster for an AI note app" --aspect-ratio 16:9
+```
+
+Preflight and route examples:
+
+```bash
+node scripts/hiapi-gpt-image-2.mjs --prompt "..." --aspect-ratio 9:21 --resolution 4K --route ext --quality high --dry-run --estimate
+node scripts/hiapi-gpt-image-2.mjs --prompt "..." --route beta --size 1536x1024
+node scripts/hiapi-gpt-image-2.mjs --resume-task-id <task-id>
 ```
 
 Supported models:
@@ -69,15 +77,31 @@ Optional background (`--background`):
 - `opaque`
 - `transparent`
 
-Cross-field constraints for `gpt-image-2/text-to-image` and `gpt-image-2/image-to-image`:
+Cross-field constraints on the default route:
 
 - `aspect_ratio=auto` (or omitted) only supports `resolution=1K`.
-- `aspect_ratio=1:1` cannot be combined with `resolution=4K`.
 - `resolution=2K` is unavailable for `5:4`, `4:5`, `3:1`, `1:3`, and `9:21`.
-- `resolution=4K` is unavailable for `1:1`, `3:1`, `1:3`, and `9:21` (so `3:1`, `1:3`, `9:21` are 1K-only).
+- `resolution=4K` is unavailable for `3:1`, `1:3`, and `9:21`; text-to-image also excludes `1:1` at 4K.
 - `background` (any value) only supports `resolution=1K`; omit it for 2K/4K.
 
-The CLI validates all of these locally before creating a task, so an unsupported combination never becomes a rejected paid task.
+## Routes (`--route`)
+
+| Route | Models | Parameters | Use when |
+| --- | --- | --- | --- |
+| `default` (omit) | both | `aspect_ratio`, `resolution`, optional `background`; image-to-image `input_urls` 1-16 | Standard choice, transparent/opaque background, many references. |
+| `beta` | text-to-image only | `--size auto` or `WIDTHxHEIGHT` (3-5 digits each, lowercase `x`, e.g. `1536x1024`) replaces aspect ratio and resolution | Exact pixel size at a flat price. |
+| `ext` (multi-ratio 4K) | both | every aspect ratio at `1K`/`2K`/`4K`, required `--quality low\|medium\|high` (default `low`); image-to-image sends `image_urls` 1-6; no `background` | Ratios the default route blocks at 2K/4K (for example `9:21` 4K) or explicit quality control. |
+
+Defaults: ext text-to-image uses `aspect_ratio=1:1`; ext image-to-image uses `auto` (follow the input). Routes are priced differently; run `--estimate` before choosing.
+
+The CLI validates all route and cross-field rules locally, so an unsupported combination never becomes a rejected paid task.
+
+## Paid-Task Safety And Recovery
+
+- `--dry-run` validates and prints the exact payload without an API key or network call. `--estimate` adds a public pricing snapshot (`paidTaskCreated: false`). Use them before any large or high-quality generation.
+- Every create sends an `Idempotency-Key` header. The key is printed on stderr before submission and the task ID immediately after. If the create call fails ambiguously, retry with `--idempotency-key <same key>`; never submit a fresh request blindly.
+- `--resume-task-id <task-id>` polls and downloads an existing task without creating a new one. Use it after a timeout, a lost terminal, or an expired local file.
+- A hard skill update blocks only new task creation; `--dry-run`, `--estimate`, and `--resume-task-id` keep working.
 
 The script writes generated data URI images to `outputs/` and prints JSON with the saved file paths or remote URLs.
 
@@ -117,6 +141,14 @@ Image-to-image:
 }
 ```
 
+Routed requests add a top-level `route` and use that route's input shape:
+
+```json
+{ "model": "gpt-image-2/text-to-image", "route": "ext", "input": { "prompt": "...", "aspect_ratio": "9:21", "resolution": "4K", "quality": "high" } }
+{ "model": "gpt-image-2/image-to-image", "route": "ext", "input": { "prompt": "...", "image_urls": ["https://example.com/source.png"], "resolution": "1K", "quality": "medium" } }
+{ "model": "gpt-image-2/text-to-image", "route": "beta", "input": { "prompt": "...", "size": "1536x1024" } }
+```
+
 `POST /v1/tasks` returns `data.taskId`. Poll `GET /v1/tasks/{taskId}` until status is `success`. Expected image output is in `data.output[]`, commonly:
 
 ```json
@@ -154,4 +186,5 @@ Use `--live` only when you want to verify that the configured key can reach the 
 - Content policy or safety errors: ask the user to revise the prompt.
 - No extractable image: explain that this skill expects `data.output[]` to contain an image URL or data URI after the task succeeds.
 - Optional skill update notice: tell the user the printed update command can be run later.
-- Required skill update notice: tell the user the printed update command must be run before using this skill again.
+- Required skill update notice: tell the user the printed update command must be run before creating new images. Recovery (`--resume-task-id`) and preflight still work.
+- Timeout or lost connection after creation: resume with `--resume-task-id`; do not create another task.
