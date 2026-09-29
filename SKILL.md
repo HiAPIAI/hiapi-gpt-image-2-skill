@@ -73,7 +73,8 @@ Cross-field constraints for `gpt-image-2/text-to-image` and `gpt-image-2/image-t
 
 - `aspect_ratio=auto` (or omitted) only supports `resolution=1K`.
 - `aspect_ratio=1:1` cannot be combined with `resolution=4K`.
-- `5:4`, `4:5`, `3:1`, `1:3`, and `9:21` only support `resolution=1K`.
+- `resolution=2K` is unavailable for `5:4`, `4:5`, `3:1`, `1:3`, and `9:21`.
+- `resolution=4K` is unavailable for `1:1`, `3:1`, `1:3`, and `9:21` (so `3:1`, `1:3`, `9:21` are 1K-only).
 - `background` (any value) only supports `resolution=1K`; omit it for 2K/4K.
 
 The CLI validates all of these locally before creating a task, so an unsupported combination never becomes a rejected paid task.

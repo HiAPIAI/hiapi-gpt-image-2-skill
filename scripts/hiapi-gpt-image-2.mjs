@@ -71,8 +71,9 @@ Options:
                         16:9, 9:16, 2:1, 1:2, 3:1, 1:3, 21:9, or 9:21.
                         Default: auto
       --resolution      1K, 2K, or 4K. Default: 1K
-                        auto aspect ratio, 5:4, 4:5, 3:1, 1:3, 9:21 and
-                        --background require 1K; 1:1 cannot use 4K.
+                        auto aspect ratio and --background require 1K;
+                        2K excludes 5:4, 4:5, 3:1, 1:3, 9:21;
+                        4K excludes 1:1, 3:1, 1:3, 9:21.
       --background      auto, opaque, or transparent (1K only). Omitted by default.
       --input-url       Repeatable. Required 1-16 times for image-to-image models.
   -o, --output-dir      Directory for generated image files. Default: outputs

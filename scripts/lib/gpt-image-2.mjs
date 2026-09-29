@@ -3,7 +3,7 @@ import path from "node:path";
 
 export const MODEL = "gpt-image-2/text-to-image";
 export const SKILL_ID = "hiapi-gpt-image-2";
-export const SKILL_VERSION = "0.4.0";
+export const SKILL_VERSION = "0.4.1";
 // 老名 → 新名向后兼容映射：现存用户脚本传老名（gpt-image-2 / gpt-image-2-image-to-image）也能用，
 // normalizeModel 入口先归一。退役的 Pro 不在表中 → 传入会落到 throw（提示改用基础版新名）。
 export const MODEL_ALIASES = new Map([
@@ -48,8 +48,9 @@ export const SUPPORTED_RESOLUTIONS = new Set(["1K", "2K", "4K"]);
 export const MAX_INPUT_URLS = 16;
 // Optional background control. HiAPI only accepts `background` when resolution is 1K.
 export const SUPPORTED_BACKGROUNDS = new Set(["auto", "opaque", "transparent"]);
-// Documented HiAPI rule: these aspect ratios are available at 1K only on the default route.
-export const ONE_K_ONLY_ASPECT_RATIOS = new Set(["5:4", "4:5", "3:1", "1:3", "9:21"]);
+// Documented HiAPI default-route rules: these aspect ratios are unavailable at 2K / 4K.
+export const TWO_K_BLOCKED_ASPECT_RATIOS = new Set(["5:4", "4:5", "3:1", "1:3", "9:21"]);
+export const FOUR_K_BLOCKED_ASPECT_RATIOS = new Set(["1:1", "3:1", "1:3", "9:21"]);
 // Output Storage tier. Default "temp" = free, auto-deleted ~7 days after creation.
 // "persistent" keeps the output long-term and is BILLED ($0.05/GB·month). The payload
 // omits the field entirely for "temp" so the API default (temporary) applies untouched.
@@ -165,14 +166,14 @@ export function buildImagePayload({
         `aspect_ratio "auto" only supports resolution "1K" for ${normalizedModel}. Use --resolution 1K, or pick an explicit aspect ratio for ${normalizedResolution}.`,
       );
     }
-    if (normalizedAspectRatio === "1:1" && normalizedResolution === "4K") {
+    if (normalizedResolution === "2K" && TWO_K_BLOCKED_ASPECT_RATIOS.has(normalizedAspectRatio)) {
       throw new Error(
-        `aspect_ratio "1:1" cannot be combined with resolution "4K" for ${normalizedModel}. Use 1K or 2K, or pick a non-square aspect ratio for 4K.`,
+        `aspect_ratio "${normalizedAspectRatio}" cannot be combined with resolution "2K" for ${normalizedModel}. Use ${FOUR_K_BLOCKED_ASPECT_RATIOS.has(normalizedAspectRatio) ? "1K" : "1K or 4K"}, or pick another aspect ratio for 2K.`,
       );
     }
-    if (ONE_K_ONLY_ASPECT_RATIOS.has(normalizedAspectRatio) && normalizedResolution !== "1K") {
+    if (normalizedResolution === "4K" && FOUR_K_BLOCKED_ASPECT_RATIOS.has(normalizedAspectRatio)) {
       throw new Error(
-        `aspect_ratio "${normalizedAspectRatio}" only supports resolution "1K" for ${normalizedModel}. Use --resolution 1K, or pick another aspect ratio for ${normalizedResolution}.`,
+        `aspect_ratio "${normalizedAspectRatio}" cannot be combined with resolution "4K" for ${normalizedModel}. Use ${TWO_K_BLOCKED_ASPECT_RATIOS.has(normalizedAspectRatio) ? "1K" : "1K or 2K"}, or pick another aspect ratio for 4K.`,
       );
     }
     if (normalizedBackground !== undefined && normalizedResolution !== "1K") {

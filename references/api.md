@@ -70,10 +70,10 @@ Image-to-image:
 | `input.prompt` | yes | Text image instruction. |
 | `input.input_urls` | image-to-image only | Required for `gpt-image-2/image-to-image`; pass 1-16 public JPEG/PNG/WebP image URLs. Do not send it for the text-to-image model. |
 | `input.aspect_ratio` | no | `auto`, `1:1`, `3:2`, `2:3`, `4:3`, `3:4`, `5:4`, `4:5`, `16:9`, `9:16`, `2:1`, `1:2`, `3:1`, `1:3`, `21:9`, or `9:21`. Defaults to `auto`. |
-| `input.resolution` | no | `1K`, `2K`, or `4K`. Defaults to `1K`. `auto` aspect ratio, `5:4`, `4:5`, `3:1`, `1:3`, `9:21`, and `background` require `1K`; `1:1` cannot use `4K`. |
+| `input.resolution` | no | `1K`, `2K`, or `4K`. Defaults to `1K`. `auto` aspect ratio and `background` require `1K`; `2K` is unavailable for `5:4`, `4:5`, `3:1`, `1:3`, `9:21`; `4K` is unavailable for `1:1`, `3:1`, `1:3`, `9:21`. |
 | `input.background` | no | `auto`, `opaque`, or `transparent`. Only accepted when `resolution` is `1K`. Omitted unless `--background` is passed. |
 
-The text-to-image model does not accept `input_urls`. The image-to-image model requires `input_urls`, and the CLI validates the 1-16 image limit, the 1K-only aspect ratios, and the 1K-only `background` rule before sending the task.
+The text-to-image model does not accept `input_urls`. The image-to-image model requires `input_urls`, and the CLI validates the 1-16 image limit, the 2K/4K aspect ratio gaps, and the 1K-only `background` rule before sending the task.
 
 ## Production Callbacks (optional)
 

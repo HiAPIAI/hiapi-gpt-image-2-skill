@@ -336,15 +336,23 @@ test("accepts up to 16 image-to-image references", () => {
   assert.equal(payload.input.input_urls.length, 16);
 });
 
-test("enforces the 1K-only aspect ratios documented for the default route", () => {
+test("enforces the documented 2K and 4K aspect ratio gaps on the default route", () => {
   for (const aspectRatio of ["5:4", "4:5", "3:1", "1:3", "9:21"]) {
     assert.throws(
       () => buildImagePayload({ prompt: "p", aspectRatio, resolution: "2K" }),
-      /only supports resolution "1K"/,
+      /cannot be combined with resolution "2K"/,
     );
     assert.equal(buildImagePayload({ prompt: "p", aspectRatio, resolution: "1K" }).input.aspect_ratio, aspectRatio);
   }
-  assert.equal(buildImagePayload({ prompt: "p", aspectRatio: "21:9", resolution: "4K" }).input.resolution, "4K");
+  for (const aspectRatio of ["1:1", "3:1", "1:3", "9:21"]) {
+    assert.throws(
+      () => buildImagePayload({ prompt: "p", aspectRatio, resolution: "4K" }),
+      /cannot be combined with resolution "4K"/,
+    );
+  }
+  for (const aspectRatio of ["5:4", "4:5", "21:9"]) {
+    assert.equal(buildImagePayload({ prompt: "p", aspectRatio, resolution: "4K" }).input.resolution, "4K");
+  }
 });
 
 test("background is optional, validated, and limited to 1K", () => {
