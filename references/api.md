@@ -73,7 +73,23 @@ Image-to-image:
 | `input.resolution` | no | `1K`, `2K`, or `4K`. Defaults to `1K`. `auto` aspect ratio and `background` require `1K`; `2K` is unavailable for `5:4`, `4:5`, `3:1`, `1:3`, `9:21`; `4K` is unavailable for `1:1`, `3:1`, `1:3`, `9:21`. |
 | `input.background` | no | `auto`, `opaque`, or `transparent`. Only accepted when `resolution` is `1K`. Omitted unless `--background` is passed. |
 
+| `route` | no | Top level. `default` (omitted), `beta` (text-to-image only), or `ext`. See Routes below. |
+
 The text-to-image model does not accept `input_urls`. The image-to-image model requires `input_urls`, and the CLI validates the 1-16 image limit, the 2K/4K aspect ratio gaps, and the 1K-only `background` rule before sending the task.
+
+## Routes
+
+Set `route` at the top level next to `model`. Pricing rows use the canonical routed ID (`gpt-image-2/text-to-image@ext`); the request keeps the plain model ID.
+
+| Route | Input fields | Notes |
+| --- | --- | --- |
+| default | `prompt`, `aspect_ratio`, `resolution`, `background`, image-to-image `input_urls` (1-16) | 2K excludes `5:4`, `4:5`, `3:1`, `1:3`, `9:21`; 4K excludes `3:1`, `1:3`, `9:21` (text-to-image also `1:1`). |
+| `beta` | `prompt`, `size` | Text-to-image only. `size` is `auto` or lowercase `WIDTHxHEIGHT` with 3-5 digits each. No `aspect_ratio`/`resolution`/`background`. |
+| `ext` | `prompt`, `aspect_ratio`, `resolution` (required), `quality` (required: `low`, `medium`, `high`), image-to-image `image_urls` (1-6, max 20 MB each) | Every aspect ratio at 1K/2K/4K. Default aspect ratio is `1:1` (text-to-image) or `auto` (image-to-image). No `background`. Reference count affects image-to-image price. |
+
+## Idempotent Create And Recovery
+
+The CLI sends an `Idempotency-Key` header (at most 255 UTF-8 bytes) on every `POST /v1/tasks`. Repeating the same key with the same body returns the original task instead of creating another one; reusing a key with a different body is rejected. Use `--idempotency-key` to retry an ambiguous create, and `--resume-task-id` to poll/download an existing task without any create call.
 
 ## Production Callbacks (optional)
 

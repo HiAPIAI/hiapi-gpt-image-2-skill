@@ -1,9 +1,10 @@
+import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 export const MODEL = "gpt-image-2/text-to-image";
 export const SKILL_ID = "hiapi-gpt-image-2";
-export const SKILL_VERSION = "0.4.1";
+export const SKILL_VERSION = "0.5.0";
 // 老名 → 新名向后兼容映射：现存用户脚本传老名（gpt-image-2 / gpt-image-2-image-to-image）也能用，
 // normalizeModel 入口先归一。退役的 Pro 不在表中 → 传入会落到 throw（提示改用基础版新名）。
 export const MODEL_ALIASES = new Map([
@@ -21,6 +22,7 @@ export const DEFAULT_RESOLUTION = "1K";
 export const DEFAULT_OUTPUT_DIR = "outputs";
 export const POLL_INTERVAL_MS = 3000;
 export const POLL_TIMEOUT_MS = 180000;
+export const DEFAULT_SITE_URL = "https://www.hiapi.ai";
 export const HIAPI_HOME_URL = "https://www.hiapi.ai";
 export const HIAPI_API_KEYS_URL = "https://www.hiapi.ai/en/register";
 export const HIAPI_DASHBOARD_URL = "https://www.hiapi.ai/en/dashboard";
@@ -49,8 +51,20 @@ export const MAX_INPUT_URLS = 16;
 // Optional background control. HiAPI only accepts `background` when resolution is 1K.
 export const SUPPORTED_BACKGROUNDS = new Set(["auto", "opaque", "transparent"]);
 // Documented HiAPI default-route rules: these aspect ratios are unavailable at 2K / 4K.
+// The text-to-image page also excludes 1:1 at 4K; the image-to-image page does not.
 export const TWO_K_BLOCKED_ASPECT_RATIOS = new Set(["5:4", "4:5", "3:1", "1:3", "9:21"]);
 export const FOUR_K_BLOCKED_ASPECT_RATIOS = new Set(["1:1", "3:1", "1:3", "9:21"]);
+export const IMAGE_TO_IMAGE_FOUR_K_BLOCKED_ASPECT_RATIOS = new Set(["3:1", "1:3", "9:21"]);
+// Routes select a channel with its own parameter shape and price. "default" is omitted
+// from the payload. beta (text-to-image only) takes `size` instead of aspect_ratio /
+// resolution; ext takes every aspect ratio at 1K/2K/4K, requires `quality`, and renames
+// image-to-image references to `image_urls` (1-6).
+export const DEFAULT_ROUTE = "default";
+export const SUPPORTED_ROUTES = new Set(["default", "beta", "ext"]);
+export const SUPPORTED_QUALITIES = new Set(["low", "medium", "high"]);
+export const DEFAULT_EXT_QUALITY = "low";
+export const EXT_MAX_IMAGE_URLS = 6;
+export const BETA_SIZE_PATTERN = /^\d{3,5}x\d{3,5}$/;
 // Output Storage tier. Default "temp" = free, auto-deleted ~7 days after creation.
 // "persistent" keeps the output long-term and is BILLED ($0.05/GB·month). The payload
 // omits the field entirely for "temp" so the API default (temporary) applies untouched.
@@ -123,6 +137,33 @@ export function normalizeBackground(value) {
   return background;
 }
 
+export function normalizeRoute(value, model = MODEL) {
+  const route = String(value ?? DEFAULT_ROUTE).trim().toLowerCase() || DEFAULT_ROUTE;
+  if (!SUPPORTED_ROUTES.has(route)) {
+    throw new Error(`Unsupported route "${route}". Use one of: ${Array.from(SUPPORTED_ROUTES).join(", ")}.`);
+  }
+  if (route === "beta" && IMAGE_TO_IMAGE_MODELS.has(normalizeModel(model))) {
+    throw new Error("The beta route is only available for gpt-image-2/text-to-image. Use the default or ext route for image-to-image.");
+  }
+  return route;
+}
+
+export function normalizeQuality(value = DEFAULT_EXT_QUALITY) {
+  const quality = String(value ?? "").trim().toLowerCase();
+  if (!SUPPORTED_QUALITIES.has(quality)) {
+    throw new Error(`Unsupported quality "${quality}". Use one of: ${Array.from(SUPPORTED_QUALITIES).join(", ")}.`);
+  }
+  return quality;
+}
+
+export function normalizeSize(value = "auto") {
+  const size = String(value ?? "").trim();
+  if (size !== "auto" && !BETA_SIZE_PATTERN.test(size)) {
+    throw new Error(`Unsupported size "${size}". Use auto or lowercase WIDTHxHEIGHT with 3-5 digits each, such as 1024x1024.`);
+  }
+  return size;
+}
+
 export function normalizeInputUrls(value) {
   if (value === undefined || value === null || value === "") return [];
   const raw = Array.isArray(value) ? value : [value];
@@ -134,33 +175,66 @@ export function normalizeInputUrls(value) {
 
 export function buildImagePayload({
   model = MODEL,
+  route,
   prompt,
-  aspectRatio = DEFAULT_ASPECT_RATIO,
-  resolution = DEFAULT_RESOLUTION,
+  aspectRatio,
+  resolution,
   inputUrls,
   background,
+  quality,
+  size,
   storage,
 } = {}) {
   const normalizedModel = normalizeModel(model);
+  const normalizedRoute = normalizeRoute(route, normalizedModel);
   const normalizedPrompt = String(prompt || "").trim();
   if (!normalizedPrompt) {
     throw new Error("A non-empty prompt is required.");
   }
 
+  const isImageToImage = IMAGE_TO_IMAGE_MODELS.has(normalizedModel);
+  const maxInputUrls = normalizedRoute === "ext" ? EXT_MAX_IMAGE_URLS : MAX_INPUT_URLS;
+  const inputUrlField = normalizedRoute === "ext" ? "image_urls" : "input_urls";
   const normalizedInputUrls = normalizeInputUrls(inputUrls);
-  if (IMAGE_TO_IMAGE_MODELS.has(normalizedModel) && (normalizedInputUrls.length < 1 || normalizedInputUrls.length > MAX_INPUT_URLS)) {
-    throw new Error(`${normalizedModel} requires 1-${MAX_INPUT_URLS} input image URLs via input_urls.`);
+  if (isImageToImage && (normalizedInputUrls.length < 1 || normalizedInputUrls.length > maxInputUrls)) {
+    throw new Error(`${normalizedModel} requires 1-${maxInputUrls} input image URLs via ${inputUrlField} on the ${normalizedRoute} route.`);
   }
-  if (!IMAGE_TO_IMAGE_MODELS.has(normalizedModel) && normalizedInputUrls.length > 0) {
+  if (!isImageToImage && normalizedInputUrls.length > 0) {
     throw new Error(`${normalizedModel} does not accept input_urls. Use gpt-image-2/image-to-image.`);
   }
 
-  const normalizedAspectRatio = normalizeAspectRatio(aspectRatio, normalizedModel);
-  const normalizedResolution = normalizeResolution(resolution, normalizedModel);
-  const normalizedBackground = normalizeBackground(background);
+  const has = (value) => value !== undefined && value !== null && value !== "";
+  const rejectOutsideRoute = (flag, value, allowedRoute) => {
+    if (has(value) && normalizedRoute !== allowedRoute) {
+      throw new Error(`${flag} is only accepted on the ${allowedRoute} route; this request uses the ${normalizedRoute} route.`);
+    }
+  };
+  rejectOutsideRoute("--size", size, "beta");
+  rejectOutsideRoute("--quality", quality, "ext");
 
-  // Cross-field constraints documented for gpt-image-2 and gpt-image-2-image-to-image.
-  if (normalizedModel === "gpt-image-2/text-to-image" || normalizedModel === "gpt-image-2/image-to-image") {
+  let input;
+  if (normalizedRoute === "beta") {
+    for (const [flag, value] of [["--aspect-ratio", aspectRatio], ["--resolution", resolution], ["--background", background]]) {
+      if (has(value)) throw new Error(`${flag} is not accepted on the beta route; use --size instead.`);
+    }
+    input = { prompt: normalizedPrompt, size: normalizeSize(has(size) ? size : "auto") };
+  } else if (normalizedRoute === "ext") {
+    if (has(background)) throw new Error("--background is not accepted on the ext route.");
+    input = {
+      prompt: normalizedPrompt,
+      ...(isImageToImage ? { image_urls: normalizedInputUrls } : {}),
+      // ext documents a 1:1 default for text-to-image and auto (follow the input) for image-to-image.
+      aspect_ratio: normalizeAspectRatio(has(aspectRatio) ? aspectRatio : (isImageToImage ? "auto" : "1:1"), normalizedModel),
+      resolution: normalizeResolution(has(resolution) ? resolution : DEFAULT_RESOLUTION, normalizedModel),
+      quality: normalizeQuality(has(quality) ? quality : DEFAULT_EXT_QUALITY),
+    };
+  } else {
+    const normalizedAspectRatio = normalizeAspectRatio(has(aspectRatio) ? aspectRatio : DEFAULT_ASPECT_RATIO, normalizedModel);
+    const normalizedResolution = normalizeResolution(has(resolution) ? resolution : DEFAULT_RESOLUTION, normalizedModel);
+    const normalizedBackground = normalizeBackground(background);
+    const fourKBlocked = isImageToImage ? IMAGE_TO_IMAGE_FOUR_K_BLOCKED_ASPECT_RATIOS : FOUR_K_BLOCKED_ASPECT_RATIOS;
+
+    // Cross-field constraints documented for the default route.
     if (normalizedAspectRatio === "auto" && normalizedResolution !== "1K") {
       throw new Error(
         `aspect_ratio "auto" only supports resolution "1K" for ${normalizedModel}. Use --resolution 1K, or pick an explicit aspect ratio for ${normalizedResolution}.`,
@@ -168,12 +242,12 @@ export function buildImagePayload({
     }
     if (normalizedResolution === "2K" && TWO_K_BLOCKED_ASPECT_RATIOS.has(normalizedAspectRatio)) {
       throw new Error(
-        `aspect_ratio "${normalizedAspectRatio}" cannot be combined with resolution "2K" for ${normalizedModel}. Use ${FOUR_K_BLOCKED_ASPECT_RATIOS.has(normalizedAspectRatio) ? "1K" : "1K or 4K"}, or pick another aspect ratio for 2K.`,
+        `aspect_ratio "${normalizedAspectRatio}" cannot be combined with resolution "2K" for ${normalizedModel}. Use ${fourKBlocked.has(normalizedAspectRatio) ? "1K" : "1K or 4K"}, pick another aspect ratio, or use --route ext.`,
       );
     }
-    if (normalizedResolution === "4K" && FOUR_K_BLOCKED_ASPECT_RATIOS.has(normalizedAspectRatio)) {
+    if (normalizedResolution === "4K" && fourKBlocked.has(normalizedAspectRatio)) {
       throw new Error(
-        `aspect_ratio "${normalizedAspectRatio}" cannot be combined with resolution "4K" for ${normalizedModel}. Use ${TWO_K_BLOCKED_ASPECT_RATIOS.has(normalizedAspectRatio) ? "1K" : "1K or 2K"}, or pick another aspect ratio for 4K.`,
+        `aspect_ratio "${normalizedAspectRatio}" cannot be combined with resolution "4K" for ${normalizedModel}. Use ${TWO_K_BLOCKED_ASPECT_RATIOS.has(normalizedAspectRatio) ? "1K" : "1K or 2K"}, pick another aspect ratio, or use --route ext.`,
       );
     }
     if (normalizedBackground !== undefined && normalizedResolution !== "1K") {
@@ -181,15 +255,15 @@ export function buildImagePayload({
         `background "${normalizedBackground}" only supports resolution "1K" for ${normalizedModel}. Use --resolution 1K, or omit --background for ${normalizedResolution}.`,
       );
     }
-  }
 
-  const input = {
-    prompt: normalizedPrompt,
-    ...(normalizedInputUrls.length > 0 ? { input_urls: normalizedInputUrls } : {}),
-    aspect_ratio: normalizedAspectRatio,
-    resolution: normalizedResolution,
-    ...(normalizedBackground !== undefined ? { background: normalizedBackground } : {}),
-  };
+    input = {
+      prompt: normalizedPrompt,
+      ...(normalizedInputUrls.length > 0 ? { input_urls: normalizedInputUrls } : {}),
+      aspect_ratio: normalizedAspectRatio,
+      resolution: normalizedResolution,
+      ...(normalizedBackground !== undefined ? { background: normalizedBackground } : {}),
+    };
+  }
 
   // storage is a TOP-LEVEL field (sibling of model/input), per HiAPI Output Storage docs.
   // Only emit it for "persistent"; "temp" is the API default and is left implicit.
@@ -197,8 +271,62 @@ export function buildImagePayload({
 
   return {
     model: normalizedModel,
+    ...(normalizedRoute !== DEFAULT_ROUTE ? { route: normalizedRoute } : {}),
     input,
     ...(normalizedStorage === "persistent" ? { storage: "persistent" } : {}),
+  };
+}
+
+// Summary fields shared by the CLI result shapes.
+export function describePayload(payload) {
+  return {
+    model: payload.model,
+    route: payload.route ?? DEFAULT_ROUTE,
+    ...(payload.input.size ? { size: payload.input.size } : {}),
+    ...(payload.input.aspect_ratio ? { aspectRatio: payload.input.aspect_ratio } : {}),
+    ...(payload.input.resolution ? { resolution: payload.input.resolution } : {}),
+    ...(payload.input.quality ? { quality: payload.input.quality } : {}),
+    ...(payload.input.background ? { background: payload.input.background } : {}),
+    storage: payload.storage ?? "temp",
+  };
+}
+
+export function normalizeIdempotencyKey(value) {
+  const key = String(value ?? randomUUID()).trim();
+  if (!key || /[\u0000-\u001f\u007f]/.test(key)) {
+    throw new Error("--idempotency-key must be non-empty and contain no control characters.");
+  }
+  if (Buffer.byteLength(key, "utf8") > 255) {
+    throw new Error("--idempotency-key must be at most 255 UTF-8 bytes.");
+  }
+  return key;
+}
+
+// Non-billing estimate from the public pricing list. Routed prices are listed under the
+// canonical routed ID (gpt-image-2/text-to-image@ext) while the request keeps model + route.
+export async function fetchPricingEstimate(payload, { fetchImpl = fetch, siteUrl = process.env.HIAPI_SITE_URL || DEFAULT_SITE_URL } = {}) {
+  const pricingModel = payload.route ? `${payload.model}@${payload.route}` : payload.model;
+  const response = await fetchImpl(`${String(siteUrl).replace(/\/+$/, "")}/api/pricing`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) throw new Error(`Pricing check failed with HTTP ${response.status}.`);
+  const body = await response.json();
+  const row = body?.data?.find((entry) => entry?.model_name === pricingModel);
+  if (!row) throw new Error(`Current public pricing does not list ${pricingModel}.`);
+  const policy = (row.policies || []).find((entry) =>
+    Object.entries(entry.rule || {}).every(([key, rule]) =>
+      rule?.with === true ? payload.input[key] !== undefined : payload.input[key] === rule?.match,
+    ),
+  );
+  const unitUsd = Number(policy?.usd_value ?? row.base_usd_value);
+  return {
+    pricingModel,
+    estimatedUsd: Number.isFinite(unitUsd) ? Number(unitUsd.toFixed(4)) : null,
+    billingBasis: row.base_display_unit?.en || "per image",
+    pricingPage: HIAPI_PRICING_URL,
+    note: payload.route === "ext" && payload.input.image_urls
+      ? "Snapshot estimate only; ext image-to-image pricing also depends on the reference count. Final billing follows the accepted task."
+      : "Snapshot estimate only; final billing follows the accepted task.",
   };
 }
 
@@ -297,12 +425,14 @@ export function extractTaskFailureSummary(response) {
     : "task failed without a public failure reason.";
 }
 
-export async function createImageTask(payload, { config = resolveConfig(), fetchImpl = fetch } = {}) {
+export async function createImageTask(payload, { config = resolveConfig(), fetchImpl = fetch, idempotencyKey } = {}) {
   return requestJson(`${config.baseUrl}/v1/tasks`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${config.apiKey}`,
       "Content-Type": "application/json",
+      // HiAPI replays the original task for a repeated key with the same body instead of creating another.
+      ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
     },
     body: JSON.stringify(payload),
   }, fetchImpl);
@@ -338,26 +468,22 @@ export async function waitForImage(taskId, { config = resolveConfig(), fetchImpl
     }
   }
 
-  throw new Error("Image generation timed out after 3 minutes. The task may still be running; try again later.");
+  throw new Error(
+    `Image generation timed out after ${Math.round(Number(timeoutMs) / 1000)} seconds. Task ${taskId} may still be running; recover it with --resume-task-id ${taskId} (no new task is created).`,
+  );
 }
 
 export async function generateImage(options, config = resolveConfig()) {
   const payload = buildImagePayload(options);
-  const created = await createImageTask(payload, { config });
+  const idempotencyKey = normalizeIdempotencyKey(options.idempotencyKey);
+  const created = await createImageTask(payload, { config, idempotencyKey });
   const taskId = extractTaskId(created);
   if (!taskId) {
-    throw new Error(`No image task id returned: ${JSON.stringify(created)}`);
+    throw new Error(`No image task id returned; task acceptance is unknown. Retry with the same idempotency key (${idempotencyKey}) instead of creating another task.`);
   }
 
   if (options.wait === false) {
-    return {
-      model: payload.model,
-      taskId,
-      status: "created",
-      aspectRatio: payload.input.aspect_ratio,
-      resolution: payload.input.resolution,
-      outputs: [],
-    };
+    return { ...describePayload(payload), taskId, idempotencyKey, status: "created", outputs: [] };
   }
 
   const { response, outputs } = await waitForImage(taskId, {
@@ -373,14 +499,7 @@ export async function generateImage(options, config = resolveConfig()) {
       outputDir: options.outputDir || DEFAULT_OUTPUT_DIR,
     });
 
-  return {
-    model: payload.model,
-    taskId,
-    aspectRatio: payload.input.aspect_ratio,
-    resolution: payload.input.resolution,
-    outputs: savedOutputs,
-    rawStatus: response,
-  };
+  return { ...describePayload(payload), taskId, idempotencyKey, outputs: savedOutputs, rawStatus: response };
 }
 
 export async function callHiApi({ config, payload, fetchImpl = fetch }) {

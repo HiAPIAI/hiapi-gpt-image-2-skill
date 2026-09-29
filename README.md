@@ -123,8 +123,10 @@ Ask your AI Agent to generate images with natural language, or provide reference
 - Image-to-image: use `gpt-image-2/image-to-image` with 1-16 `--input-url` values (public JPEG/PNG/WebP)
 - Model variants: `gpt-image-2/text-to-image`, `gpt-image-2/image-to-image`
 - Aspect ratios: `auto`, `1:1`, `3:2`, `2:3`, `4:3`, `3:4`, `5:4`, `4:5`, `16:9`, `9:16`, `2:1`, `1:2`, `3:1`, `1:3`, `21:9`, `9:21`
-- Resolutions: `1K`, `2K`, `4K` (`auto` and `--background` are 1K-only; 2K is unavailable for `5:4`, `4:5`, `3:1`, `1:3`, `9:21`; 4K is unavailable for `1:1`, `3:1`, `1:3`, `9:21`)
+- Resolutions: `1K`, `2K`, `4K` (default route: `auto` and `--background` are 1K-only; 2K is unavailable for `5:4`, `4:5`, `3:1`, `1:3`, `9:21`; 4K is unavailable for `3:1`, `1:3`, `9:21`, and `1:1` for text-to-image)
 - Background: optional `--background auto|opaque|transparent` at 1K
+- Routes: `--route beta` (text-to-image, exact `--size` such as `1536x1024`) and `--route ext` (every aspect ratio at 1K/2K/4K with `--quality low|medium|high`; image-to-image 1-6 references)
+- Paid-task safety: `--dry-run` / `--estimate` create no task; every create uses an `Idempotency-Key`; `--resume-task-id` recovers an existing task without paying again
 - Local output: images are saved to `outputs/`
 - URL output: if HiAPI returns an image URL, the Agent returns the URL directly
 - Clear errors: missing Key, invalid Key, insufficient balance, rate limits, and safety policy blocks all include a next step
@@ -156,6 +158,21 @@ node scripts/hiapi-gpt-image-2.mjs \
   --input-url "https://example.com/product.jpg" \
   --aspect-ratio 16:9 \
   --resolution 2K
+```
+
+Every aspect ratio at 4K (ext route), with a price check first:
+
+```bash
+node scripts/hiapi-gpt-image-2.mjs \
+  --prompt "Tall editorial poster for a jazz festival" \
+  --route ext --aspect-ratio 9:21 --resolution 4K --quality high \
+  --dry-run --estimate
+```
+
+Recover a task after a timeout (no new task is created):
+
+```bash
+node scripts/hiapi-gpt-image-2.mjs --resume-task-id <task-id>
 ```
 
 Custom output directory:

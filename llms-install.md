@@ -72,7 +72,9 @@ node scripts/hiapi-gpt-image-2.mjs \
   --resolution 2K
 ```
 
-Supported models are `gpt-image-2/text-to-image` and `gpt-image-2/image-to-image`. The image-to-image model requires 1-16 `--input-url` values; the text-to-image model must not receive input URLs. Add `--background auto|opaque|transparent` only with `--resolution 1K`; `auto` aspect ratio is also 1K-only; 2K is unavailable for `5:4`, `4:5`, `3:1`, `1:3`, `9:21`; 4K is unavailable for `1:1`, `3:1`, `1:3`, `9:21`.
+Supported models are `gpt-image-2/text-to-image` and `gpt-image-2/image-to-image`. The image-to-image model requires 1-16 `--input-url` values; the text-to-image model must not receive input URLs. On the default route, add `--background auto|opaque|transparent` only with `--resolution 1K`; `auto` aspect ratio is also 1K-only; 2K is unavailable for `5:4`, `4:5`, `3:1`, `1:3`, `9:21`; 4K is unavailable for `3:1`, `1:3`, `9:21` (and `1:1` for text-to-image). Use `--route ext --quality low|medium|high` for every aspect ratio at 1K/2K/4K (image-to-image: 1-6 references), or `--route beta --size WIDTHxHEIGHT` for an exact text-to-image size.
+
+Before a paid run, use `--dry-run --estimate` (no task, no key needed). After a timeout, recover with `--resume-task-id <task-id>` instead of creating a new task; retry an ambiguous create with the printed `--idempotency-key`.
 
 ## Prompt Recipe Source
 
