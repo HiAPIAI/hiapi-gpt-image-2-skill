@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import {
+  DEFAULT_SITE_URL,
   buildImagePayload,
   buildHttpErrorMessage,
   checkSkillUpdate,
@@ -526,12 +527,20 @@ test("fetchPricingEstimate matches routed pricing rows without creating a task",
     requested.push(url);
     return new Response(JSON.stringify(pricing), { status: 200 });
   };
-  const est = (opts) => fetchPricingEstimate(buildImagePayload({ prompt: "p", ...opts }), { fetchImpl, siteUrl: "https://www.hiapi.ai" });
-  assert.equal((await est({ aspectRatio: "16:9", resolution: "4K" })).estimatedUsd, 0.06);
-  assert.equal((await est({ route: "ext", aspectRatio: "16:9", resolution: "4K", quality: "high" })).pricingModel, "gpt-image-2/text-to-image@ext");
-  assert.equal((await est({ route: "ext", aspectRatio: "16:9", resolution: "4K", quality: "high" })).estimatedUsd, 0.76);
-  assert.equal((await est({ route: "beta" })).estimatedUsd, 0.02);
-  assert.ok(requested.every((url) => url === "https://www.hiapi.ai/api/pricing"));
+  const savedSiteUrl = process.env.HIAPI_SITE_URL;
+  delete process.env.HIAPI_SITE_URL;
+  const est = (opts) => fetchPricingEstimate(buildImagePayload({ prompt: "p", ...opts }), { fetchImpl });
+  try {
+    assert.equal((await est({ aspectRatio: "16:9", resolution: "4K" })).estimatedUsd, 0.06);
+    assert.equal((await est({ route: "ext", aspectRatio: "16:9", resolution: "4K", quality: "high" })).pricingModel, "gpt-image-2/text-to-image@ext");
+    assert.equal((await est({ route: "ext", aspectRatio: "16:9", resolution: "4K", quality: "high" })).estimatedUsd, 0.76);
+    assert.equal((await est({ route: "beta" })).estimatedUsd, 0.02);
+  } finally {
+    if (savedSiteUrl !== undefined) process.env.HIAPI_SITE_URL = savedSiteUrl;
+  }
+  assert.equal(DEFAULT_SITE_URL, "https://api.hiapi.ai");
+  assert.ok(requested.length > 0, "pricing requests were issued");
+  assert.ok(requested.every((url) => url === "https://api.hiapi.ai/api/pricing"), requested.join(", "));
 });
 
 test("parseArgs reads route, recovery, and preflight flags", () => {

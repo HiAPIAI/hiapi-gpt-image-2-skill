@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.1 — 2026-11-07
+
+- `--estimate` now reads public pricing from `https://api.hiapi.ai`. `DEFAULT_SITE_URL` points at the API host because `https://www.hiapi.ai/api/pricing` redirects to `https://hiapi.ai/api/pricing` and returns 404.
+- **Soft upgrade**: `latestVersion` is 0.5.1 and `minimumVersion` remains 0.5.0.
+
 ## 0.5.0 — 2026-09-29
 
 - Added `--route beta|ext`. beta (text-to-image) takes `--size auto|WIDTHxHEIGHT`; ext supports every aspect ratio at 1K/2K/4K with required `--quality low|medium|high`, and sends image-to-image references as `image_urls` (1-6).

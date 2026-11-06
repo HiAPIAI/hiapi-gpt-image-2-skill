@@ -4,7 +4,7 @@ import path from "node:path";
 
 export const MODEL = "gpt-image-2/text-to-image";
 export const SKILL_ID = "hiapi-gpt-image-2";
-export const SKILL_VERSION = "0.5.0";
+export const SKILL_VERSION = "0.5.1";
 // 老名 → 新名向后兼容映射：现存用户脚本传老名（gpt-image-2 / gpt-image-2-image-to-image）也能用，
 // normalizeModel 入口先归一。退役的 Pro 不在表中 → 传入会落到 throw（提示改用基础版新名）。
 export const MODEL_ALIASES = new Map([
@@ -22,7 +22,7 @@ export const DEFAULT_RESOLUTION = "1K";
 export const DEFAULT_OUTPUT_DIR = "outputs";
 export const POLL_INTERVAL_MS = 3000;
 export const POLL_TIMEOUT_MS = 180000;
-export const DEFAULT_SITE_URL = "https://www.hiapi.ai";
+export const DEFAULT_SITE_URL = "https://api.hiapi.ai";
 export const HIAPI_HOME_URL = "https://www.hiapi.ai";
 export const HIAPI_API_KEYS_URL = "https://www.hiapi.ai/en/register";
 export const HIAPI_DASHBOARD_URL = "https://www.hiapi.ai/en/dashboard";
