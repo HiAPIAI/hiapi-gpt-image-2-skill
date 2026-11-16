@@ -5,7 +5,7 @@
 import { existsSync, mkdirSync, rmSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { stdin, stdout, exit, env, argv } from 'node:process';
 import readline from 'node:readline/promises';
 
@@ -91,7 +91,7 @@ async function resolveTargets() {
 
 function ensureGit() {
   try {
-    execSync('git --version', { stdio: 'ignore' });
+    execFileSync('git', ['--version'], { stdio: 'ignore' });
   } catch {
     console.error(`[${DISPLAY_NAME}] git is required but not found on PATH.`);
     exit(1);
@@ -106,7 +106,7 @@ function installTo(target) {
     rmSync(destination, { recursive: true, force: true });
   }
   console.log(`[${DISPLAY_NAME}] Cloning into ${destination} …`);
-  execSync(`git clone --depth 1 ${REPO_URL} "${destination}"`, { stdio: 'inherit' });
+  execFileSync('git', ['clone', '--depth', '1', REPO_URL, destination], { stdio: 'inherit' });
 }
 
 function reportApiKey() {
@@ -117,7 +117,7 @@ function reportApiKey() {
   console.log('');
   console.log(`[${DISPLAY_NAME}] HIAPI_API_KEY is not set yet.`);
   console.log(`  Get a key: ${API_KEY_PAGE}`);
-  console.log('  Then: export HIAPI_API_KEY="your_key_here"');
+  console.log('  Then: export HIAPI_API_KEY=<paste your HiAPI key>');
 }
 
 (async () => {

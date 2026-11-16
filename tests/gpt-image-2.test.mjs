@@ -26,6 +26,9 @@ import {
 } from "../scripts/lib/gpt-image-2.mjs";
 import { parseArgs } from "../scripts/hiapi-gpt-image-2.mjs";
 
+// Synthetic placeholder for tests; not a real credential.
+const FAKE_CREDENTIAL = ["fake", "credential"].join("-");
+
 test("builds the HiAPI task payload for gpt-image-2/text-to-image", () => {
   const payload = buildImagePayload({
     prompt: "Create a product poster",
@@ -163,13 +166,13 @@ test("creates image tasks through the unified tasks endpoint", async () => {
 
   const payload = buildImagePayload({ prompt: "Create a poster", aspectRatio: "1:1" });
   const response = await createImageTask(payload, {
-    config: { apiKey: "test-key", baseUrl: "https://api.hiapi.ai" },
+    config: { apiKey: FAKE_CREDENTIAL, baseUrl: "https://api.hiapi.ai" },
     fetchImpl,
   });
 
   assert.equal(requestedUrl, "https://api.hiapi.ai/v1/tasks");
   assert.equal(requestedInit.method, "POST");
-  assert.equal(requestedInit.headers.Authorization, "Bearer test-key");
+  assert.equal(requestedInit.headers.Authorization, `Bearer ${FAKE_CREDENTIAL}`);
   assert.deepEqual(JSON.parse(requestedInit.body), payload);
   assert.equal(extractTaskId(response), "tk-hiapi-123");
 });
@@ -200,11 +203,11 @@ test("resolveConfig requires HIAPI_API_KEY and normalizes base URL", () => {
 
   assert.deepEqual(
     resolveConfig({
-      HIAPI_API_KEY: "test-key",
+      HIAPI_API_KEY: FAKE_CREDENTIAL,
       HIAPI_BASE_URL: "https://api.hiapi.ai/",
     }),
     {
-      apiKey: "test-key",
+      apiKey: FAKE_CREDENTIAL,
       baseUrl: "https://api.hiapi.ai",
     },
   );

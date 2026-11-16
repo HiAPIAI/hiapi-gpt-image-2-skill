@@ -336,7 +336,7 @@ export function resolveConfig(env = process.env) {
   const apiKey = String(env.HIAPI_API_KEY || "").trim();
   if (!apiKey) {
     throw new Error(
-      `HIAPI_API_KEY is required. Get one at ${HIAPI_API_KEYS_URL}, then run: export HIAPI_API_KEY="your_hiapi_api_key_here"`,
+      `HIAPI_API_KEY is required. Get one at ${HIAPI_API_KEYS_URL}, then run: export HIAPI_API_KEY=<paste your HiAPI key>`,
     );
   }
 
