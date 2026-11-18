@@ -4,9 +4,9 @@ This file is intentionally written for AI agents. Read it before installing or u
 
 Important links:
 
-- Get API key: https://www.hiapi.ai/en/register
-- Pricing: https://www.hiapi.ai/en/pricing
-- HiAPI docs: https://docs.hiapi.ai
+- Get API key: https://www.hiapi.ai/en/register?utm_source=github&utm_medium=readme&utm_campaign=hiapi-gpt-image-2
+- Pricing: https://www.hiapi.ai/en/pricing?utm_source=github&utm_medium=readme&utm_campaign=hiapi-gpt-image-2
+- HiAPI docs: https://docs.hiapi.ai?utm_source=github&utm_medium=readme&utm_campaign=hiapi-gpt-image-2
 - Prompt gallery: https://github.com/HiAPIAI/awesome-gpt-image-2-prompts
 - HiAPI skills directory: https://github.com/HiAPIAI/hiapi-skills
 - Remote MCP: https://mcp.hiapi.ai/mcp
@@ -92,11 +92,11 @@ When this skill is used:
 
 1. Read `SKILL.md`.
 2. Ensure `HIAPI_API_KEY` is configured.
-3. If the key is missing, tell the user to create one at https://www.hiapi.ai/en/register.
+3. If the key is missing, tell the user to create one at https://www.hiapi.ai/en/register?utm_source=github&utm_medium=readme&utm_campaign=hiapi-gpt-image-2.
 4. Use `scripts/hiapi-gpt-image-2.mjs`.
 5. Return the generated file path or remote URL.
 6. If generation fails, return the HTTP status and compact error message.
-7. If the error mentions balance, credits, quota, or HTTP 402, tell the user to add credits or check billing at https://www.hiapi.ai/en/dashboard.
+7. If the error mentions balance, credits, quota, or HTTP 402, tell the user to add credits or check billing at https://www.hiapi.ai/en/dashboard?utm_source=github&utm_medium=readme&utm_campaign=hiapi-gpt-image-2.
 8. If the error is HTTP 429, tell the user to wait and retry.
 9. If the error mentions content policy or safety, ask the user to revise the prompt.
 10. If the CLI prints "A newer HiAPI skill is available", show the update command but continue with the current result.

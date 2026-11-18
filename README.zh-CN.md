@@ -2,13 +2,13 @@
 
 把 GPT Image 2 图像生成接入你的 AI Agent。
 
-**GPT Image 2 • 安装 • API Key • [HiAPI](https://www.hiapi.ai/zh)**
+**GPT Image 2 • 安装 • API Key • [HiAPI](https://www.hiapi.ai/zh?utm_source=github&utm_medium=readme&utm_campaign=hiapi-gpt-image-2)**
 
-[免费获取 API Key](https://www.hiapi.ai/zh/register) · [查看价格](https://www.hiapi.ai/zh/pricing) · [HiAPI 文档](https://docs.hiapi.ai) · [Prompt Gallery](https://github.com/HiAPIAI/awesome-gpt-image-2-prompts) · [全部 HiAPI Skills](https://github.com/HiAPIAI/hiapi-skills)
+[免费获取 API Key](https://www.hiapi.ai/zh/register?utm_source=github&utm_medium=readme&utm_campaign=hiapi-gpt-image-2) · [查看价格](https://www.hiapi.ai/zh/pricing?utm_source=github&utm_medium=readme&utm_campaign=hiapi-gpt-image-2) · [HiAPI 文档](https://docs.hiapi.ai?utm_source=github&utm_medium=readme&utm_campaign=hiapi-gpt-image-2) · [Prompt Gallery](https://github.com/HiAPIAI/awesome-gpt-image-2-prompts) · [全部 HiAPI Skills](https://github.com/HiAPIAI/hiapi-skills)
 
 Languages: [English](README.md) | [简体中文](README.zh-CN.md)
 
-> **HiAPI Matrix:** 🎨 [Image Prompts](https://github.com/HiAPIAI/awesome-gpt-image-2-prompts) · 🎬 [Video Prompts](https://github.com/HiAPIAI/awesome-ai-video-prompts) · 🛠️ **Agent Skills (you are here)** · 🤖 [Remote MCP](https://docs.hiapi.ai/for-ai/) · 📖 [API Docs](https://docs.hiapi.ai)
+> **HiAPI Matrix:** 🎨 [Image Prompts](https://github.com/HiAPIAI/awesome-gpt-image-2-prompts) · 🎬 [Video Prompts](https://github.com/HiAPIAI/awesome-ai-video-prompts) · 🛠️ **Agent Skills (you are here)** · 🤖 [Remote MCP](https://docs.hiapi.ai/for-ai/?utm_source=github&utm_medium=readme&utm_campaign=hiapi-gpt-image-2) · 📖 [API Docs](https://docs.hiapi.ai?utm_source=github&utm_medium=readme&utm_campaign=hiapi-gpt-image-2)
 
 ---
 
@@ -81,7 +81,7 @@ cp -R hiapi-gpt-image-2-skill "$AGENT_SKILLS_DIR/hiapi-gpt-image-2"
 
 1. 运行：npx -y github:HiAPIAI/hiapi-gpt-image-2-skill -y
    （会自动检测 Codex / Claude Code 的 skills 目录）
-2. 从 https://www.hiapi.ai/zh/dashboard/api-keys 获取并设置环境变量 HIAPI_API_KEY
+2. 从 https://www.hiapi.ai/zh/dashboard/api-keys?utm_source=github&utm_medium=readme&utm_campaign=hiapi-gpt-image-2 获取并设置环境变量 HIAPI_API_KEY
 3. 读取 SKILL.md 了解使用方法
 ```
 
@@ -89,7 +89,7 @@ cp -R hiapi-gpt-image-2-skill "$AGENT_SKILLS_DIR/hiapi-gpt-image-2"
 
 ## 获取 API Key
 
-1. 打开 [免费获取 API Key](https://www.hiapi.ai/zh/register)
+1. 打开 [免费获取 API Key](https://www.hiapi.ai/zh/register?utm_source=github&utm_medium=readme&utm_campaign=hiapi-gpt-image-2)
 2. 登录或注册 HiAPI 账号
 3. 创建新的 API Key
 4. 在运行 Agent 的终端设置环境变量：
@@ -216,9 +216,9 @@ node scripts/hiapi-gpt-image-2.mjs \
 
 | 问题 | 解决方案 |
 | --- | --- |
-| `HIAPI_API_KEY is required` | 去 [免费获取 API Key](https://www.hiapi.ai/zh/register) 创建 Key，然后设置 `HIAPI_API_KEY`。 |
+| `HIAPI_API_KEY is required` | 去 [免费获取 API Key](https://www.hiapi.ai/zh/register?utm_source=github&utm_medium=readme&utm_campaign=hiapi-gpt-image-2) 创建 Key，然后设置 `HIAPI_API_KEY`。 |
 | `401 Unauthorized` | 检查 API Key 是否正确，或重新生成 Key。 |
-| `402 Payment Required` / 余额不足 | 进入 [HiAPI Dashboard](https://www.hiapi.ai/zh/dashboard) 检查账号状态。 |
+| `402 Payment Required` / 余额不足 | 进入 [HiAPI Dashboard](https://www.hiapi.ai/zh/dashboard?utm_source=github&utm_medium=readme&utm_campaign=hiapi-gpt-image-2) 检查账号状态。 |
 | `429 Too Many Requests` | 稍后重试，或减少并发生成请求。 |
 | 内容被拦截 | 提示词触发了内容安全策略，请修改描述。 |
 | 没有图片输出 | 检查任务返回内容；该 skill 期望任务成功后在 `data.output[]` 中返回图片 URL 或 data URI。 |
@@ -247,4 +247,4 @@ MIT
 
 ---
 
-[HiAPI](https://www.hiapi.ai/zh) — 一个 API，所有 AI 模型
+[HiAPI](https://www.hiapi.ai/zh?utm_source=github&utm_medium=readme&utm_campaign=hiapi-gpt-image-2) — 一个 API，所有 AI 模型

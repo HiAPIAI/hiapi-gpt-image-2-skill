@@ -23,10 +23,10 @@ export const DEFAULT_OUTPUT_DIR = "outputs";
 export const POLL_INTERVAL_MS = 3000;
 export const POLL_TIMEOUT_MS = 180000;
 export const DEFAULT_SITE_URL = "https://api.hiapi.ai";
-export const HIAPI_HOME_URL = "https://www.hiapi.ai";
-export const HIAPI_API_KEYS_URL = "https://www.hiapi.ai/en/register";
-export const HIAPI_DASHBOARD_URL = "https://www.hiapi.ai/en/dashboard";
-export const HIAPI_PRICING_URL = "https://www.hiapi.ai/en/pricing";
+export const HIAPI_HOME_URL = "https://www.hiapi.ai/en?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-gpt-image-2";
+export const HIAPI_API_KEYS_URL = "https://www.hiapi.ai/en/register?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-gpt-image-2";
+export const HIAPI_DASHBOARD_URL = "https://www.hiapi.ai/en/dashboard?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-gpt-image-2";
+export const HIAPI_PRICING_URL = "https://www.hiapi.ai/en/pricing?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-gpt-image-2";
 export const SUPPORTED_ASPECT_RATIOS = new Set([
   "auto",
   "1:1",
@@ -97,7 +97,7 @@ export function normalizeStorage(value = DEFAULT_STORAGE) {
   if (!SUPPORTED_STORAGE.has(storage)) {
     throw new Error(
       `Unsupported storage "${storage}". Use one of: ${Array.from(SUPPORTED_STORAGE).join(", ")}. ` +
-        `"persistent" keeps outputs beyond ~7 days and is billed ($0.05/GB·month); see https://docs.hiapi.ai/storage/.`,
+        `"persistent" keeps outputs beyond ~7 days and is billed ($0.05/GB·month); see https://docs.hiapi.ai/storage/?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-gpt-image-2.`,
     );
   }
   return storage;
