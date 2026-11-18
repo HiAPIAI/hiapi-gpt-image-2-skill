@@ -107,7 +107,7 @@ Options:
   -o, --output-dir      Directory for generated image files. Default: outputs
       --storage         temp or persistent. Default: temp (free, expires ~7 days).
                         "persistent" keeps the output long-term and is BILLED
-                        ($0.05/GB·month). See https://docs.hiapi.ai/storage/?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-gpt-image-2
+                        ($0.05/GB·month). See https://docs.hiapi.ai/storage/
       --dry-run         Validate and print the payload. No API key, no task.
       --estimate        Print a public pricing snapshot for the payload. No task.
       --idempotency-key Reuse a key to retry a create safely. Auto-generated if omitted.
@@ -186,7 +186,7 @@ async function main() {
   // Persistent storage costs money; warn on stderr so stdout stays clean JSON.
   if (payload.storage === "persistent") {
     console.error(
-      'Note: --storage persistent keeps this output beyond ~7 days and is billed at $0.05/GB·month (charged daily). Delete it to stop charges. See https://docs.hiapi.ai/storage/?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-gpt-image-2',
+      'Note: --storage persistent keeps this output beyond ~7 days and is billed at $0.05/GB·month (charged daily). Delete it to stop charges. See https://docs.hiapi.ai/storage/',
     );
   }
 
