@@ -13,7 +13,7 @@ const SKILL_FOLDER = 'hiapi-gpt-image-2';
 const REPO_URL = 'https://github.com/HiAPIAI/hiapi-gpt-image-2-skill.git';
 const DISPLAY_NAME = 'HiAPI GPT Image 2 Skill';
 const MODEL_PAGE = 'https://www.hiapi.ai/en/models/gpt-image-2';
-const API_KEY_PAGE = 'https://www.hiapi.ai/en/dashboard/api-keys';
+const API_KEY_PAGE = 'https://www.hiapi.ai/en/dashboard/api-keys?utm_source=skill&utm_medium=install&utm_campaign=hiapi-gpt-image-2';
 
 const argList = argv.slice(2);
 const yes = argList.includes('-y') || argList.includes('--yes') || !stdin.isTTY;
